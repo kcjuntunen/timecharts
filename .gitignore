@@ -1,0 +1,8 @@
+bootstrap/
+bootstrap*
+*png
+*jpg
+img/
+jquery*
+moment*
+junk/
