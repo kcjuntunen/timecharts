@@ -17,6 +17,16 @@ date_default_timezone_set('America/Detroit');
          .datepicker, .table-condensed {
              cursor: pointer;
          }
+         #timeMenu {
+             padding: 7px;
+             border-radius: 3px;
+             border-width: thin;
+             border-style: solid;
+         }
+         #timeMenu:hover {
+             background-color: lightgrey;
+             text-decoration: none;
+         }
         </style>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-backstretch/2.0.4/jquery.backstretch.min.js"></script>
@@ -30,11 +40,12 @@ date_default_timezone_set('America/Detroit');
                  var machine_clicked = null;
                  $.backstretch("./img/stolen-bg.jpg");
                  $('#start').datetimepicker({
-                     format: 'YYYY-MM-DD h:mm A'
+                     format: 'YYYY/MM/DD h:mm A'
                  });
                  $('#end').datetimepicker({
-                     format: 'YYYY-MM-DD h:mm A'
+                     format: 'YYYY/MM/DD h:mm A'
                  });
+                 today();
              });
         </script>
     </head>
@@ -53,6 +64,10 @@ date_default_timezone_set('America/Detroit');
                 </div>
                 <!-- Collection of nav links and other content for toggling -->
                 <div id="navbarCollapse" class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li id="LinkHome" class="inactive"><a href="/..">Home</a></li>
+                    </ul>
+
                     <ul class="nav navbar-nav">
                         <li id="allMachines" class="active"><a href="#">All</a></li>
                     </ul>
@@ -88,9 +103,9 @@ date_default_timezone_set('America/Detroit');
                          while ($b = $result->fetch_assoc()) {
                              // echo "$('#$c').on('click', function () { $('li').removeClass('active');\n $('#$c').addClass('active');\n $('#machineClicked').text('$c');\n });\n";
                              echo "$(\"#{$b['MACHNUM']}\").on(\"click\", function () { $(\"li\").removeClass(\"active\");\n"
-                                 , "$(\"#{$b['MACHNUM']}\").addClass(\"active\");\n"
-                                   , "$(\"#machineClicked\").text(\"{$b['MACHNUM']}\");\n"
-                                     , "});\n";
+                           , "$(\"#{$b['MACHNUM']}\").addClass(\"active\");\n"
+                           , "$(\"#machineClicked\").text(\"{$b['MACHNUM']}\");\n"
+                           , "});\n";
                          }
                          $result->free();
                          $mysqli->close();
@@ -102,9 +117,114 @@ date_default_timezone_set('America/Detroit');
         </header>
         <div class="container">
             <div class="col-xs-12 col-sm-12 col-md-6 col-md-6">
-                <div class="panel panel-default">
+                <div class="panel panel-primary">
                     <div class="panel-heading">Amstore Machine Cycle Time</div>
                     <div class="panel-body">
+                        <script type="text/javascript" >
+                         var formatDate = function(d) {
+                             var day = d.getDate();
+
+                             if (day < 10) {
+                                 day = "0" + day;
+                             }
+
+                             var month = d.getMonth() + 1;
+
+                             if (month < 10) {
+                                 month = "0" + month;
+                             }
+
+                             var year = d.getFullYear();
+                             var hours = d.getHours();
+                             var ampm = hours >= 12 ? 'PM' : 'AM';
+                             hours = hours % 12;
+                             hours = hours ? hours : 12;
+                             /* if (hours < 10) {
+                              *     hours = "0" + hours;
+                              * }*/
+
+                             var minutes = d.getMinutes();
+
+                             if (minutes < 10) {
+                                 minutes = "0" + minutes;
+                             }
+
+                             return year + "/" + month + "/" + day + " " + hours + ":" + minutes + " " + ampm;
+                         };
+                         var today =  function() {
+                             var start = new Date();
+                             var end = new Date();
+                             start.setHours(6);
+                             start.setMinutes(0);
+                             start.setSeconds(0);
+
+                             end.setHours(14);
+                             end.setMinutes(30);
+                             end.setSeconds(0);
+                             $('#start').val(formatDate(start));
+                             $('#end').val(formatDate(end));
+                             $('#timeMenu').html('Today <b class="caret"></b>');
+                         };
+                         var yesterday =  function() {
+                             var start = new Date();
+                             var end = new Date();
+                             start.setHours(6);
+                             start.setMinutes(0);
+                             start.setSeconds(0);
+                             start.setDate(start.getDate() - 1);
+
+                             end.setHours(14);
+                             end.setMinutes(30);
+                             end.setSeconds(0);
+                             end.setDate(end.getDate() - 1);
+
+                             $('#start').val(formatDate(start));
+                             $('#end').val(formatDate(end));
+                             $('#timeMenu').html('Yesterday <b class="caret"></b>');
+                         };
+                         var thisHour = function() {
+                             var start = new Date();
+                             var end = new Date();
+                             // start.setHours(start.getHours() - 1);
+                             start.setMinutes(0);
+                             start.setSeconds(0);
+
+                             end.setMinutes(59);
+                             end.setSeconds(0);
+
+                             $('#start').val(formatDate(start));
+                             $('#end').val(formatDate(end));
+                             $('#timeMenu').html('This Hour <b class="caret"></b>');
+                         };
+                         var thisWeek = function() {
+                             var start = new Date();
+                             var end = new Date();
+                             start.setDate(start.getDate() - (start.getDay() - 2));
+                             start.setHours(6);
+                             start.setMinutes(0);
+                             start.setSeconds(0);
+                             start.setDate(start.getDate() - 1);
+
+                             end.setDate(end.getDate() + (6 - end.getDay()));
+                             end.setHours(14);
+                             end.setMinutes(30);
+                             end.setSeconds(0);
+                             end.setDate(end.getDate() - 1);
+
+                             $('#start').val(formatDate(start));
+                             $('#end').val(formatDate(end));
+                             $('#timeMenu').html('This Week <b class="caret"></b>');
+                         };
+                        </script>
+                        <div id="timeButtons" class="dropdown" style="padding-bottom: 20px;">
+                            <a href="#" id="timeMenu" data-toggle="dropdown" class="dropdown-toggle" >Time Presets <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#" onclick="today();">Today</a></li>
+                                <li><a href="#" onclick="yesterday();">Yesterday</a></li>
+                                <li><a href="#" onclick="thisWeek();">This Week</a></li>
+                                <li><a href="#" onclick="thisHour();">This Hour</a></li>
+                            </ul>
+                        </div>
                         <fieldset class="row">
                             <div class="form-group">
                                 <label for="start"><span class="glyphicon glyphicon-time"></span> Start time</label>
@@ -124,8 +244,13 @@ date_default_timezone_set('America/Detroit');
                 <div class="panel panel-default">
                     <div class="panel-heading">Time Pie</div>
                     <div class="panel-body">
-                        <div id="pie">
+                        <div class="col-md-6">
+                            <div id="pie"></div>
                         </div>
+                        <div class="col-md-6">
+                            <div id="pie2"></div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -165,7 +290,7 @@ date_default_timezone_set('America/Detroit');
                         <h4 class="modal-title">Alert</h4>
                     </div>
                     <div class="modal-body">
-                        <p id="alertText">End time shoule be after start time.</p>
+                        <p id="alertText">End time should be after start time.</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>

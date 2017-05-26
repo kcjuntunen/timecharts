@@ -11,8 +11,9 @@ $output = '{ "data": [';
 if (isset($_REQUEST['machine'])) {
     $machnum = $mysqli->real_escape_string($_REQUEST['machine']);
     $s = "SELECT * FROM CUT_CYCLE_TIMES WHERE MACHNUM = '$machnum' AND STARTTIME > " .
-       "CONVERT_TZ('" . $beg . "', '-04:00', '+00:00') AND STOPTIME < " .
-       "CONVERT_TZ('" . $end . "', '-04:00', '+00:00')";
+       "'$beg' AND STOPTIME < '$end'";
+    "CONVERT_TZ('" . $beg . "', @@session.time_zone, '+00:00') AND STOPTIME < " .
+                   "CONVERT_TZ('" . $end . "', @@session.time_zone, '+00:00')";
     $rawdata = $mysqli->query($s);
     while ($datum = $rawdata->fetch_assoc()) {
         $display_name = $datum['PROGRAM'];
@@ -28,8 +29,8 @@ if (isset($_REQUEST['machine'])) {
     while ($machnum = $machine_list_data->fetch_assoc()) {
         $mach = $machnum['MACHNUM'];
         $s = "SELECT * FROM CUT_CYCLE_TIMES WHERE MACHNUM = '$mach' AND STARTTIME > " .
-           "CONVERT_TZ('" . $beg . "', '-04:00', '+00:00') AND STOPTIME < " .
-           "CONVERT_TZ('" . $end . "', '-04:00', '+00:00')";
+           "CONVERT_TZ('" . $beg . "', @@session.time_zone, '+00:00') AND STOPTIME < " .
+           "CONVERT_TZ('" . $end . "', @@session.time_zone, '+00:00')";
         $rawdata = $mysqli->query($s);
         while ($datum = $rawdata->fetch_assoc()) {
             $display_name = $datum['PROGRAM'];
