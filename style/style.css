@@ -65,3 +65,10 @@ chart {
 button:hover, fieldset:hover {
     filter: contrast(1.5);
 }
+
+.timeMenu {
+    padding: 5px;
+    border-radius: 3px;
+    border-width: thin;
+    border-style: solid;
+}
