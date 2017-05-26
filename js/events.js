@@ -11,7 +11,7 @@ var drawMultSeries = function (strt, nd, mach) {
         var machines = [];
         var arrdata = function(indata) {
             var res = [];
-
+            // console.log(indata);
             if (!Array.isArray(indata) || indata.length < 1) {
                 var chart = $('#chart');
                 var pie = $('#pie');
@@ -23,7 +23,9 @@ var drawMultSeries = function (strt, nd, mach) {
                 return [];
             }
 
-            total_idle_time = new Date(indata[indata.length - 1][2]) - new Date(indata[0][3]);
+            total_idle_time = new Date(indata[indata.length - 1][2].replace(/-/gi, '/')) - new Date(indata[0][3].replace(/-/gi, '/'));
+            //tit = getTotalIdleTime(new Date(indata[0][3].replace(/-/gi, '/')), new Date(indata[indata.length - 1][2].replace(/-/gi, '/')));
+            //console.log(tit);
             $("#tbls").html("");
             var diff = 0;
             for (var i = 0, d = indata.length; i < d; i++) {
@@ -31,9 +33,11 @@ var drawMultSeries = function (strt, nd, mach) {
                     machines.push(indata[i][0]);
                 }
                 // // console.log(new Date(indata[i][2]));
-                res.push([indata[i][0], indata[i][1], new Date(indata[i][2]), new Date(indata[i][3])]);
+                res.push([indata[i][0], indata[i][1],
+                          new Date(indata[i][2].replace(/-/gi, '/')),
+                          new Date(indata[i][3].replace(/-/gi, '/'))]);
                 if (indata[i][3] && indata[i][2]) {
-                    diff = new Date(indata[i][3]) - new Date(indata[i][2]);
+                    diff = new Date(indata[i][3].replace(/-/gi, '/')) - new Date(indata[i][2].replace(/-/gi, '/'));
                 }
                 if (indata[i][1].search('Setup') > -1) {
                     total_setup_time += diff;
@@ -43,6 +47,7 @@ var drawMultSeries = function (strt, nd, mach) {
                     total_idle_time -= diff;
                 }
             }
+            // console.log(res);
             if (total_setup_time < 0) {
                 total_setup_time = 1;
             }
@@ -55,18 +60,21 @@ var drawMultSeries = function (strt, nd, mach) {
             return res;
         };
         var data = new google.visualization.DataTable();
+        // This, unfortunately, doesn't seem to do anything.
+        var dfmt = new google.visualization.DateFormat({ pattern: 'MMM d, yyyy h:mm:ss aa' });
 
         data.addColumn({type: 'string', id: 'Machine'});
         data.addColumn({type: 'string', id: 'Program'});
         data.addColumn({type: 'date', id: 'Start'});
         data.addColumn({type: 'date', id: 'End'});
-
         data.addRows(arrdata(jdata["data"]));
+        dfmt.format(data, 2);
+        dfmt.format(data, 3);
         /* // console.log(JSON.stringify(data));*/
         $("#chart").fadeIn(2000);
         var ch = document.getElementById('chart');
         var chart = new google.visualization.Timeline(ch);
-        var options = {timeline: { width: 1280, height: 128, showBarLabels: false }};
+        var options = {timeline: { width: 1280, height: 128 * machines.length, showBarLabels: false }};
         chart.draw(data, options);
         var piedata = google.visualization.arrayToDataTable([
             ['Task', 'Hours per Day'],
@@ -76,7 +84,7 @@ var drawMultSeries = function (strt, nd, mach) {
         ]);
 
         var pie_options = {
-            title: 'Machine Efficiency',
+            title: 'Selected Range',
             colors: ['#f3f01e', '#108a00', '#e60000' ],
             is3D: true
         };
@@ -85,6 +93,25 @@ var drawMultSeries = function (strt, nd, mach) {
         var pie = document.getElementById('pie');
         var pie_chart = new google.visualization.PieChart(pie);
         pie_chart.draw(piedata, pie_options);
+        ////////////////////////////////////////////////////////////////////////////////
+        var piedata2 = google.visualization.arrayToDataTable([
+            ['Task', 'Hours per Day'],
+            ['Setup', (13 * 5)/(1000 * 60)],
+            ['Cycle', (121 * 5)/(1000 * 60)],
+            ['Idle',  ((480 * 5) - (121 * 5) - (13 * 5))/(1000 * 60)]
+        ]);
+
+        var pie_options2 = {
+            title: 'Last Week',
+            colors: ['#f3f01e', '#108a00', '#e60000' ],
+            is3D: true
+        };
+
+        $('#pie2').fadeIn(2000);
+        var pie2 = document.getElementById('pie2');
+        var pie_chart2 = new google.visualization.PieChart(pie2);
+        pie_chart2.draw(piedata2, pie_options2);
+        ////////////////////////////////////////////////////////////////////////////////
 
         for(var i = 0; i < machines.length; i++) {
             var fmt_datatable = new google.visualization.DataTable();
@@ -92,6 +119,7 @@ var drawMultSeries = function (strt, nd, mach) {
             fmt_datatable.addColumn('string', 'Program', 'Machine');
             fmt_datatable.addColumn('date', 'Start', 'Start');
             fmt_datatable.addColumn('date', 'End', 'End');
+            fmt_datatable.addColumn('number', 'Diff (min)', 'Diff');
             $("#tbls").append("<button type=\"button\" class=\"btn btn-info\" data-toggle=\"collapse\" data-target=\"#m" + machines[i] +
                               "\"></ br>"  + machines[i] +
                               "</button>" +
@@ -102,11 +130,15 @@ var drawMultSeries = function (strt, nd, mach) {
                 if (jdata["data"][j][0] === machines[i]) {
                     // console.log("push" + jdata["data"][j][0]);
                     // console.log("length = " + fmt_data.length);
+                    var sDate = new Date(jdata["data"][j][2].replace(/-/gi, '/'));
+                    var eDate = new Date(jdata["data"][j][3].replace(/-/gi, '/'));
+                    var dDate = (eDate - sDate) / 60000;
                     fmt_data.push([
                         jdata["data"][j][0],
                         jdata["data"][j][1],
-                        new Date(jdata["data"][j][2]),
-                        new Date(jdata["data"][j][3])
+                        sDate,
+                        eDate,
+                        dDate
                     ]);
                 }
             }
@@ -137,14 +169,28 @@ var drawMultSeries = function (strt, nd, mach) {
             complete: succeed});
 };
 
+var getTotalIdleTime = function(gTITstart, gTITend) {
+    var gTIT = new Date(gTITend - gTITstart);
+    var breaks = [];
+    for(var i = gTITstart.getDate(), j = gTITend.getDate();
+        i <= j; i++) {
+        var bStrt = new Date(gTITstart.getYear(), gTITstart.getMonth(), gTITstart.getDate(), 8, 0, 0);
+        var bEnd = new Date(gTITstart.getYear(), gTITstart.getMonth(), gTITstart.getDate(), 8, 15, 0);
+        if (bEnd <= gTITend && bStrt >= gTITstart) {
+            var brk = [bStrt, bEnd];
+            breaks.append(brk);
+        }
+    }
+    return breaks;
+}
 
 var loadChart = function() {
     var chart = $('#chart');
     var pie = $('#pie');
     chart.fadeOut(0);
     pie.fadeOut(0);
-    var starttime = new Date(document.getElementById('start').value);
-    var endtime = new Date(document.getElementById('end').value);
+    var starttime = new Date(new Date(document.getElementById('start').value).toUTCString());
+    var endtime = new Date(new Date(document.getElementById('end').value).toUTCString());
     var machine_clicked = $('#machineClicked').text();
 
     if (endtime <= starttime) {
