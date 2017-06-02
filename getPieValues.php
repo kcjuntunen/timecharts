@@ -55,7 +55,7 @@ function get_total_time($beg, $end, $setup, $conn) {
 
 function get_time($conn, $machnum, $setup, $starttime, $stoptime) {
     $stp = $setup ? "True" : "False";
-    $sql = "SELECT STOPTIME - STARTTIME AS DIFF FROM CUT_CYCLE_TIMES "
+    $sql = "SELECT SUM(STOPTIME - STARTTIME) AS DIFF FROM CUT_CYCLE_TIMES "
          . "WHERE MACHNUM=$machnum AND "
          . "SETUP=$stp AND STARTTIME > '$starttime' AND STOPTIME < '$stoptime'";
     //echo var_dump($sql);
@@ -92,10 +92,9 @@ if (isset($_REQUEST['start']) && isset($_REQUEST['end'])) {
     $end = strtotime($_REQUEST['end']);
     $sr = get_selected_range($beg, $end, $mysqli);
     $lw = get_last_week($mysqli);
-    echo '[{ "total": ' . $sr['total'] . ', "setup": ' . $sr['setup']
-                        . ', "cycle": ' . $sr['cycle'] . '}, '
-                        . '{ "total": ' . $lw['total'] . ', "setup": ' . $lw['setup']
-                        . ', "cycle": ' . $lw['cycle'] . '}]';
+    echo "[{ \"total\": {$sr['total']}, \"setup\": {$sr['setup']}, \"cycle\": {$sr['cycle']}}, "
+        . "{ \"total\": {$lw['total']}, \"setup\": {$lw['setup']}, \"cycle\": {$lw['cycle']}}]";
+
     $mysqli->close();
 }
 ?>
