@@ -1,6 +1,7 @@
 google.charts.load('current', {packages: ['timeline', 'corechart', 'bar', 'table']});
 google.charts.setOnLoadCallback(drawMultSeries);
 
+var machines = [];
 var drawMultSeries = function (strt, nd, mach) {
     var succeed = function(datain) {
         var jdata = JSON.parse(datain.responseText);
@@ -103,13 +104,159 @@ var drawMultSeries = function (strt, nd, mach) {
     $.ajax({url: 'getMachineTimes.php',
             data: datstring,
             dataType: "json",
-            complete: succeed});
+            complete: r});
 
     $.ajax({url: 'getPieValues.php',
             data: datstring,
             dataType: "json",
             complete: renderPies});
 };
+
+var r = function(indata) {
+    var jdata = JSON.parse(indata.responseText);
+    x = arrdata(jdata['data']);
+    renderTimeline(x);
+    renderTables(x);
+};
+
+var arrdata = function(indata) {
+    var res = [];
+    // var machines = [];
+    if (!Array.isArray(indata) || indata.length < 1) {
+        var chart = $('#chart');
+        chart.fadeOut(0);
+        var txt = $("#alertText");
+        txt.text('No data found.');
+        $("#modalAlert").modal('show');
+        return [];
+    }
+
+    $("#tbls").html("");
+    var diff = 0;
+    for (var i = 0, d = indata.length; i < d; i++) {
+        if (!machines.includes(indata[i][0])) {
+            machines.push(indata[i][0]);
+        }
+
+        res.push([indata[i][0], indata[i][1],
+                  new Date(indata[i][2].replace(/-/gi, '/')),
+                  new Date(indata[i][3].replace(/-/gi, '/'))]);
+    }
+    return res;
+};
+
+var renderTimeline = function(arrdata) {
+    //var machines = [];
+    var data = new google.visualization.DataTable();
+    // This, unfortunately, doesn't seem to do anything.
+    var dfmt = new google.visualization.DateFormat({ pattern: 'MMM d, yyyy h:mm:ss aa' });
+
+    data.addColumn({type: 'string', id: 'Machine'});
+    data.addColumn({type: 'string', id: 'Program'});
+    data.addColumn({type: 'date', id: 'Start'});
+    data.addColumn({type: 'date', id: 'End'});
+    data.addRows(arrdata);
+    dfmt.format(data, 2);
+    dfmt.format(data, 3);
+    /* // console.log(JSON.stringify(data));*/
+    $("#chart").fadeIn(2000);
+    var ch = document.getElementById('chart');
+    var chart = new google.visualization.Timeline(ch);
+    var options = {timeline: { width: 1280, height: 128 * machines.length, showBarLabels: false }};
+    chart.draw(data, options);
+    ////////////////////////////////////////////////////////////////////////////////
+
+    for(var i = 0; i < machines.length; i++) {
+        var fmt_datatable = new google.visualization.DataTable();
+        fmt_datatable.addColumn('string', 'Machine', 'Machine');
+        fmt_datatable.addColumn('string', 'Program', 'Machine');
+        fmt_datatable.addColumn('date', 'Start', 'Start');
+        fmt_datatable.addColumn('date', 'End', 'End');
+        fmt_datatable.addColumn('number', 'Diff (min)', 'Diff');
+        $("#tbls").append("<button type=\"button\" class=\"btn btn-info\" data-toggle=\"collapse\" data-target=\"#m" + machines[i] +
+                          "\"></ br>"  + machines[i] +
+                          "</button>" +
+                          "<div id=\"m" + machines[i] +
+                          "\" class=\"collapse\"></div>");
+        var fmt_data = [];
+        for(var j = 0, jn = data.getNumberOfRows(); j < jn; j++) {
+            if (arrdata[j][0] === machines[i]) {
+                // var sDate = new Date(jdata["data"][j][2].replace(/-/gi, '/'));
+                // var eDate = new Date(jdata["data"][j][3].replace(/-/gi, '/'));
+                var sDate = arrdata[j][2];
+                var eDate = arrdata[j][3];
+                var dDate = (eDate - sDate) / 60000;
+                fmt_data.push([
+                    arrdata[j][0],
+                    arrdata[j][1],
+                    sDate,
+                    eDate,
+                    dDate
+                ]);
+            }
+        }
+
+        fmt_datatable.addRows(fmt_data);
+        var tbl = new google.visualization.Table(document.getElementById("m" + machines[i]));
+        fmt = new google.visualization.DateFormat(
+            { pattern: 'MMM d, yyyy h:mm:ss aa' });
+        fmt.format(fmt_datatable, 2);
+        fmt.format(fmt_datatable, 3);
+        tbl.draw(fmt_datatable,
+                 { showRowNumber: true,
+                   width: 1280,
+                   height: 256
+                 }
+                );
+    }
+};
+
+var renderTables = function(data) {
+    fmt_data = [];
+    ////////////////////////////////////////////////////////////////////////////////
+
+    // for(var i = 0; i < machines.length; i++) {
+        var fmt_datatable = new google.visualization.DataTable();
+        fmt_datatable.addColumn('string', 'Machine', 'Machine');
+        fmt_datatable.addColumn('string', 'Program', 'Machine');
+        fmt_datatable.addColumn('date', 'Start', 'Start');
+        fmt_datatable.addColumn('date', 'End', 'End');
+        fmt_datatable.addColumn('number', 'Diff (min)', 'Diff');
+    //     $("#tbls").append("<button type=\"button\" class=\"btn btn-info\" data-toggle=\"collapse\" data-target=\"#m" + machines[i] +
+    //                       "\"></ br>"  + machines[i] +
+    //                       "</button>" +
+    //                       "<div id=\"m" + machines[i] +
+    //                       "\" class=\"collapse\"></div>");
+    //     var fmt_data = [];
+    //     for(var j = 0, jn = data.length; j < jn; j++) {
+    //         if (data[j][0] === machines[i]) {
+    //             var sDate = new Date(data[j][2].toString().replace(/-/gi, '/'));
+    //             var eDate = new Date(data[j][3].toString().replace(/-/gi, '/'));
+    //             var dDate = (eDate - sDate) / 60000;
+    //             fmt_data.push([
+    //                 data[j][0],
+    //                 data[j][1],
+    //                 sDate,
+    //                 eDate,
+    //                 dDate
+    //             ]);
+    //         }
+    //    }
+
+    fmt_datatable.addRows(fmt_data);
+    var tbl = new google.visualization.Table(document.getElementById("m" + machines[i]));
+    fmt = new google.visualization.DateFormat(
+        { pattern: 'MMM d, yyyy h:mm:ss aa' });
+    fmt.format(fmt_datatable, 2);
+    fmt.format(fmt_datatable, 3);
+    tbl.draw(fmt_datatable,
+             { showRowNumber: true,
+               width: 1280,
+               height: 256
+             }
+            );
+    fmt_data = [];
+}
 
 var renderPies = function(inp) {
     input = JSON.parse(inp.responseText);
@@ -166,21 +313,6 @@ var renderPies = function(inp) {
 
     // fadepie.fadeIn();
     // fadepie2.fadeIn();
-};
-
-var getTotalIdleTime = function(gTITstart, gTITend) {
-    var gTIT = new Date(gTITend - gTITstart);
-    var breaks = [];
-    for(var i = gTITstart.getDate(), j = gTITend.getDate();
-        i <= j; i++) {
-        var bStrt = new Date(gTITstart.getYear(), gTITstart.getMonth(), gTITstart.getDate(), 8, 0, 0);
-        var bEnd = new Date(gTITstart.getYear(), gTITstart.getMonth(), gTITstart.getDate(), 8, 15, 0);
-        if (bEnd <= gTITend && bStrt >= gTITstart) {
-            var brk = [bStrt, bEnd];
-            breaks.append(brk);
-        }
-    }
-    return breaks;
 };
 
 var loadChart = function() {
