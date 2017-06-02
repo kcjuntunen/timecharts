@@ -3,59 +3,32 @@ google.charts.setOnLoadCallback(drawMultSeries);
 
 var drawMultSeries = function (strt, nd, mach) {
     var succeed = function(datain) {
-        // console.log(datain.responseText);
         var jdata = JSON.parse(datain.responseText);
-        var total_setup_time = 0;
-        var total_cycle_time = 0;
-        var total_idle_time = 0;
         var machines = [];
         var arrdata = function(indata) {
             var res = [];
-            // console.log(indata);
             if (!Array.isArray(indata) || indata.length < 1) {
                 var chart = $('#chart');
-                var pie = $('#pie');
                 chart.fadeOut(0);
-                pie.fadeOut(0);
                 var txt = $("#alertText");
                 txt.text('No data found.');
                 $("#modalAlert").modal('show');
                 return [];
             }
 
-            total_idle_time = new Date(indata[indata.length - 1][2].replace(/-/gi, '/')) - new Date(indata[0][3].replace(/-/gi, '/'));
-            //tit = getTotalIdleTime(new Date(indata[0][3].replace(/-/gi, '/')), new Date(indata[indata.length - 1][2].replace(/-/gi, '/')));
-            //console.log(tit);
             $("#tbls").html("");
             var diff = 0;
             for (var i = 0, d = indata.length; i < d; i++) {
                 if (!machines.includes(indata[i][0])) {
                     machines.push(indata[i][0]);
                 }
-                // // console.log(new Date(indata[i][2]));
+
                 res.push([indata[i][0], indata[i][1],
                           new Date(indata[i][2].replace(/-/gi, '/')),
                           new Date(indata[i][3].replace(/-/gi, '/'))]);
-                if (indata[i][3] && indata[i][2]) {
-                    diff = new Date(indata[i][3].replace(/-/gi, '/')) - new Date(indata[i][2].replace(/-/gi, '/'));
-                }
-                if (indata[i][1].search('Setup') > -1) {
-                    total_setup_time += diff;
-                    total_idle_time -=diff;
-                } else {
-                    total_cycle_time += diff;
-                    total_idle_time -= diff;
-                }
-            }
-            // console.log(res);
-            if (total_setup_time < 0) {
-                total_setup_time = 1;
-            }
-            if (total_idle_time < 0) {
-                total_idle_time = 1;
-            }
-            if (total_cycle_time < 0) {
-                total_cycle_time = 1;
+                // if (indata[i][3] && indata[i][2]) {
+                //     diff = new Date(indata[i][3].replace(/-/gi, '/')) - new Date(indata[i][2].replace(/-/gi, '/'));
+                // }
             }
             return res;
         };
@@ -68,6 +41,7 @@ var drawMultSeries = function (strt, nd, mach) {
         data.addColumn({type: 'date', id: 'Start'});
         data.addColumn({type: 'date', id: 'End'});
         data.addRows(arrdata(jdata["data"]));
+        //data.addRows(jdata["data"]);
         dfmt.format(data, 2);
         dfmt.format(data, 3);
         /* // console.log(JSON.stringify(data));*/
@@ -76,41 +50,6 @@ var drawMultSeries = function (strt, nd, mach) {
         var chart = new google.visualization.Timeline(ch);
         var options = {timeline: { width: 1280, height: 128 * machines.length, showBarLabels: false }};
         chart.draw(data, options);
-        var piedata = google.visualization.arrayToDataTable([
-            ['Task', 'Hours per Day'],
-            ['Setup', total_setup_time/(1000 * 60)],
-            ['Cycle', total_cycle_time/(1000 * 60)],
-            ['Idle',  total_idle_time/(1000 * 60)]
-        ]);
-
-        var pie_options = {
-            title: 'Selected Range',
-            colors: ['#f3f01e', '#108a00', '#e60000' ],
-            is3D: true
-        };
-
-        $('#pie').fadeIn(2000);
-        var pie = document.getElementById('pie');
-        var pie_chart = new google.visualization.PieChart(pie);
-        pie_chart.draw(piedata, pie_options);
-        ////////////////////////////////////////////////////////////////////////////////
-        var piedata2 = google.visualization.arrayToDataTable([
-            ['Task', 'Hours per Day'],
-            ['Setup', (13 * 5)/(1000 * 60)],
-            ['Cycle', (121 * 5)/(1000 * 60)],
-            ['Idle',  ((480 * 5) - (121 * 5) - (13 * 5))/(1000 * 60)]
-        ]);
-
-        var pie_options2 = {
-            title: 'Last Week',
-            colors: ['#f3f01e', '#108a00', '#e60000' ],
-            is3D: true
-        };
-
-        $('#pie2').fadeIn(2000);
-        var pie2 = document.getElementById('pie2');
-        var pie_chart2 = new google.visualization.PieChart(pie2);
-        pie_chart2.draw(piedata2, pie_options2);
         ////////////////////////////////////////////////////////////////////////////////
 
         for(var i = 0; i < machines.length; i++) {
@@ -128,8 +67,6 @@ var drawMultSeries = function (strt, nd, mach) {
             var fmt_data = [];
             for(var j = 0, jn = data.getNumberOfRows(); j < jn; j++) {
                 if (jdata["data"][j][0] === machines[i]) {
-                    // console.log("push" + jdata["data"][j][0]);
-                    // console.log("length = " + fmt_data.length);
                     var sDate = new Date(jdata["data"][j][2].replace(/-/gi, '/'));
                     var eDate = new Date(jdata["data"][j][3].replace(/-/gi, '/'));
                     var dDate = (eDate - sDate) / 60000;
@@ -158,7 +95,7 @@ var drawMultSeries = function (strt, nd, mach) {
             fmt_data = [];
         }
     };
-    var datstring = "start=" + strt + "&end=" + nd;
+    var datstring = "start=" + new Date(strt).toUTCString() + "&end=" + new Date(nd).toUTCString();
     if (mach != '') {
         datstring += "&machine=" + mach;
     }
@@ -167,6 +104,68 @@ var drawMultSeries = function (strt, nd, mach) {
             data: datstring,
             dataType: "json",
             complete: succeed});
+
+    $.ajax({url: 'getPieValues.php',
+            data: datstring,
+            dataType: "json",
+            complete: renderPies});
+};
+
+var renderPies = function(inp) {
+    input = JSON.parse(inp.responseText);
+    ////////////////////////////////////////////////////////////////////////////////
+    // Pie 1
+    ////////////////////////////////////////////////////////////////////////////////
+    var idle = input[0]['total'] - (input[0]['setup'] + input[0]['cycle']);
+    var piedata = google.visualization.arrayToDataTable([
+        ['Task', 'Hours per Day'],
+        ['Setup', input[0]['setup'] / 60],
+        ['Cycle', input[0]['cycle'] / 60],
+        ['Idle',  idle / 60]
+    ]);
+
+    var pie_options = {
+        title: 'Selected Range',
+        colors: ['#f3f01e', '#108a00', '#e60000' ],
+        pieHole: 0.4,
+        slices: { 0: {offset: 0.1},
+                  1: {offset: 0.1}},
+        //chartArea: {width:'101%', height:'101%'}
+    };
+
+    var pie = document.getElementById('pie');
+    var pie_chart = new google.visualization.PieChart(pie);
+    pie_chart.draw(piedata, pie_options);
+    ////////////////////////////////////////////////////////////////////////////////
+    // Pie 2
+    ////////////////////////////////////////////////////////////////////////////////
+    idle = input[1]['total'] - (input[1]['setup'] + input[1]['cycle']);
+    var piedata2 = google.visualization.arrayToDataTable([
+        ['Task', 'Hours per Day'],
+        ['Setup', input[1]['setup'] / 60],
+        ['Cycle', input[1]['cycle'] / 60],
+        ['Idle',  idle / 60]
+    ]);
+
+    var pie_options2 = {
+        title: 'Last Week',
+        colors: ['#f3f01e', '#108a00', '#e60000' ],
+        pieHole: 0.4,
+        slices: { 0: {offset: 0.1},
+                  1: {offset: 0.1}},
+        //chartArea: {width:'105%', height:'105%'}
+    };
+
+    var pie2 = document.getElementById('pie2');
+    var pie_chart2 = new google.visualization.PieChart(pie2);
+    pie_chart2.draw(piedata2, pie_options2);
+    // var fadepie = $('#piecontainer');
+    // var fadepie2 = $('#pie2container');
+    // fadepie.fadeOut(0);
+    // fadepie2.fadeOut(0);
+
+    // fadepie.fadeIn();
+    // fadepie2.fadeIn();
 };
 
 var getTotalIdleTime = function(gTITstart, gTITend) {
@@ -182,13 +181,12 @@ var getTotalIdleTime = function(gTITstart, gTITend) {
         }
     }
     return breaks;
-}
+};
 
 var loadChart = function() {
     var chart = $('#chart');
     var pie = $('#pie');
     chart.fadeOut(0);
-    pie.fadeOut(0);
     var starttime = new Date(new Date(document.getElementById('start').value).toUTCString());
     var endtime = new Date(new Date(document.getElementById('end').value).toUTCString());
     var machine_clicked = $('#machineClicked').text();
@@ -199,8 +197,8 @@ var loadChart = function() {
         $("#modalAlert").modal('show');
         return;
     }
-
-    drawMultSeries($('input#start').val(), $('input#end').val(), $('input#machineClicked').text());
+    drawMultSeries(starttime, endtime, machine_clicked);
+    //drawMultSeries($('input#start').val(), $('input#end').val(), $('input#machineClicked').text());
 };
 
 $(document).ready(
@@ -210,7 +208,6 @@ $(document).ready(
         // };
 
         $('#chart').fadeOut(0);
-        $('#pie').fadeOut(0);
         $('button#load').on('click', loadChart);
     }
 );
