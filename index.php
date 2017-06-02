@@ -242,12 +242,12 @@ date_default_timezone_set('America/Detroit');
             </div>
             <div class="col-xs-12 col-sm-12 col-md-6 col-md-6">
                 <div class="panel panel-default">
-                    <div class="panel-heading">Time Pie</div>
-                    <div class="panel-body">
-                        <div class="col-md-6">
+                    <div class="panel-heading">Time Pies</div>
+                    <div class="panel-body"> <!-- style="height: 252px;"> -->
+                        <div id="piecontainer" class="col-xs-12 xol-sm12 col-md-6">
                             <div id="pie"></div>
                         </div>
-                        <div class="col-md-6">
+                        <div id="pie2container" class="col-xs-12 xol-sm12 col-md-6">
                             <div id="pie2"></div>
                         </div>
 
