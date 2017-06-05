@@ -27,6 +27,7 @@ function get_total_seconds($beg, $end, $machine_count) {
     // remove off hours
     if ($days > 1) {
         $total_seconds = $total_seconds - (($days - 1) * (16 * 60) * 60);
+        $total_seconds = $total_seconds - (60 * 60 * ($days - 1));
     }
     return $total_seconds;
 }
