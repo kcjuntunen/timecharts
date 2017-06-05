@@ -39,23 +39,15 @@ var arrdata = function(indata) {
     }
 
     $("#tbls").html("");
-    for (var i = 0, d = machines.length; i < d; i++) {
-        var s = new Date(document.getElementById('start').value).toISOString(); //.replace(/-/gi, '/');
-        res.push([machines[i], 'Range Limit', new Date(s), new Date(s)]);
-    }
     var diff = 0;
     for (i = 0, d = indata.length; i < d; i++) {
-        if (!machines.includes(indata[i][0])) {
+        if (machines.indexOf(indata[i][0]) < 0) {
             machines.push(indata[i][0]);
         }
 
         res.push([indata[i][0], indata[i][1],
                   new Date(indata[i][2].replace(/-/gi, '/')),
                   new Date(indata[i][3].replace(/-/gi, '/'))]);
-    }
-    for (i = 0, d = machines.length; i < d; i++) {
-        var e = new Date(document.getElementById('end').value).toISOString();//.replace(/-/gi, '/');
-        res.push([machines[i], 'Range Limit', new Date(e), new Date(e)]);
     }
     return res;
 };
@@ -77,9 +69,17 @@ var renderTimeline = function(arrdata) {
     $("#chart").fadeIn(2000);
     var ch = document.getElementById('chart');
     var chart = new google.visualization.Timeline(ch);
-    var options = {timeline: { width: 1280, height: 128 * machines.length, showBarLabels: false }};
-    var s = new Date(document.getElementById('start').value).toISOString();
-    var e = new Date(document.getElementById('end').value).toISOString();
+    var options = {
+        //width: 1280,
+        height: 128 * machines.length,
+        timeline: { showBarLabels: false },
+        hAxis: {
+            viewWindowMode: 'pretty',
+            minValue: new Date(document.getElementById('start').value),
+            maxValue: new Date(document.getElementById('end').value),
+            format: 'h:mm'
+        }
+    };
     // chart.setVisibleChartRange(new Date(s), new Date(e));
     chart.draw(data, options);
 };
@@ -103,7 +103,7 @@ var renderTables = function(data) {
                 var sDate = new Date(data[j][2].toString());
                 var eDate = new Date(data[j][3].toString());
                 var dDate = (eDate - sDate) / 60000;
-                var min = Math.round(dDate);
+                var min = Math.floor(dDate);
                 var sec = (('.' + dDate.toString().split('.')[1]) * 60);
                 sec = sec < 10 ? '0' + sec : sec;
                 var strDate = (min + ':' + sec).split('.')[0];
