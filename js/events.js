@@ -92,7 +92,7 @@ var renderTables = function(data) {
         fmt_datatable.addColumn('string', 'Program', 'Machine');
         fmt_datatable.addColumn('date', 'Start', 'Start');
         fmt_datatable.addColumn('date', 'End', 'End');
-        fmt_datatable.addColumn('number', 'Diff (min)', 'Diff');
+        fmt_datatable.addColumn('string', 'Diff (min:sec)', 'Diff');
         $("#tbls").append("<button type=\"button\" class=\"btn btn-info\" data-toggle=\"collapse\" data-target=\"#m" + machines[i] +
                           "\"></ br>"  + machines[i] +
                           "</button>" +
@@ -103,12 +103,17 @@ var renderTables = function(data) {
                 var sDate = new Date(data[j][2].toString());
                 var eDate = new Date(data[j][3].toString());
                 var dDate = (eDate - sDate) / 60000;
+                var min = Math.round(dDate);
+                var sec = (('.' + dDate.toString().split('.')[1]) * 60);
+                sec = sec < 10 ? '0' + sec : sec;
+                var strDate = (min + ':' + sec).split('.')[0];
+                strDate = strDate.search('NaN') > -1 ? '--' : strDate;
                 fmt_data.push([
                     data[j][0],
                     data[j][1],
                     sDate,
                     eDate,
-                    dDate
+                    strDate
                 ]);
             }
         }
