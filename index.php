@@ -215,24 +215,48 @@ date_default_timezone_set('America/Detroit');
                              $('#end').val(formatDate(end));
                              $('#timeMenu').html('This Week <b class="caret"></b>');
                          };
+                         var lastWeek = function() {
+                             var start = new Date();
+                             var end = new Date();
+                             start.setDate(start.getDate() - (start.getDay() - 2) - 7);
+                             start.setHours(6);
+                             start.setMinutes(0);
+                             start.setSeconds(0);
+                             start.setDate(start.getDate() - 1);
+
+                             end.setDate(end.getDate() + (6 - end.getDay()) - 7);
+                             end.setHours(14);
+                             end.setMinutes(30);
+                             end.setSeconds(0);
+                             end.setDate(end.getDate() - 1);
+
+                             $('#start').val(formatDate(start));
+                             $('#end').val(formatDate(end));
+                             $('#timeMenu').html('Last Week <b class="caret"></b>');
+
+                         };
+                         var userSpec = function() {
+                             $('#timeMenu').html('User Specified <b class="caret"></b>');
+                         };
                         </script>
                         <div id="timeButtons" class="dropdown" style="padding-bottom: 20px;">
                             <a href="#" id="timeMenu" data-toggle="dropdown" class="dropdown-toggle" >Time Presets <b class="caret"></b></a>
                             <ul class="dropdown-menu">
                                 <li><a href="#" onclick="today();">Today</a></li>
                                 <li><a href="#" onclick="yesterday();">Yesterday</a></li>
-                                <li><a href="#" onclick="thisWeek();">This Week</a></li>
                                 <li><a href="#" onclick="thisHour();">This Hour</a></li>
+                                <li><a href="#" onclick="thisWeek();">This Week</a></li>
+                                <li><a href="#" onclick="lastWeek();">Last Week</a></li>
                             </ul>
                         </div>
                         <fieldset class="row">
                             <div class="form-group">
                                 <label for="start"><span class="glyphicon glyphicon-time"></span> Start time</label>
-                                <input type="datetime" id="start" class="form-control" name="start" value="<?php echo date('Y-m-d H:i T', time() - (60 * 60)); ?>">
+                                <input type="datetime" id="start" class="form-control" name="start" onclick="userSpec();" value="<?php echo date('Y-m-d H:i T', time() - (60 * 60)); ?>">
                             </div>
                             <div class="form-group">
                                 <label for="end"><span class="glyphicon glyphicon-time"></span> End time</label>
-                                <input type="datetime" id="end" class="form-control" name="end" value="<?php echo date('Y-m-d H:i T', time()); ?>"></input>
+                                <input type="datetime" id="end" class="form-control" name="end" onclick="userSpec();" value="<?php echo date('Y-m-d H:i T', time()); ?>"></input>
                             </div>
                             <button id="load" class="btn btn-primary" action="submit"><span class="glyphicon glyphicon-search"></span> <i>Load</i></button>
                             <input style="opacity: 0;" type="text" value= "" id="machineClicked"></input>
