@@ -105,9 +105,11 @@ var renderTables = function(data) {
                 var dDate = (eDate - sDate) / 60000;
                 var min = Math.floor(dDate);
                 var sec = (('.' + dDate.toString().split('.')[1]) * 60);
+                min = min.toString().search('NaN') > -1 ? 0 : min;
+                sec = sec.toString().search('NaN') > -1 ? 0 : sec;
                 sec = sec < 10 ? '0' + sec : sec;
                 var strDate = (min + ':' + sec).split('.')[0];
-                strDate = strDate.search('NaN') > -1 ? '--' : strDate;
+                //strDate = strDate.search('NaN') > -1 ? '--' : strDate;
                 fmt_data.push([
                     data[j][0],
                     data[j][1],
