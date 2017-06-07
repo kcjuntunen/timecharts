@@ -56,7 +56,7 @@ function get_total_time($beg, $end, $setup, $conn) {
 
 function get_time($conn, $machnum, $setup, $starttime, $stoptime) {
     $stp = $setup ? "True" : "False";
-    $sql = "SELECT SUM(STOPTIME - STARTTIME) AS DIFF FROM CUT_CYCLE_TIMES "
+    $sql = "SELECT SUM(TIMESTAMPDIFF(SECOND, STARTTIME, STOPTIME)) AS DIFF FROM CUT_CYCLE_TIMES "
          . "WHERE MACHNUM=$machnum AND "
          . "SETUP=$stp AND STARTTIME > '$starttime' AND STOPTIME < '$stoptime'";
     //echo var_dump($sql);
