@@ -45,7 +45,7 @@ date_default_timezone_set('America/Detroit');
                  $('#end').datetimepicker({
                      format: 'YYYY/MM/DD h:mm A'
                  });
-                 today();
+                 sixTillNow();
              });
         </script>
     </head>
@@ -151,6 +151,21 @@ date_default_timezone_set('America/Detroit');
 
                              return year + "/" + month + "/" + day + " " + hours + ":" + minutes + " " + ampm;
                          };
+                         var sixTillNow = function() {
+                             var start = new Date();
+                             var end = new Date();
+                             start.setHours(6);
+                             start.setMinutes(0);
+                             start.setSeconds(0);
+
+                             end.setHours(end.getHours() + 1);
+                             end.setMinutes(0);
+                             end.setSeconds(0);
+                             $('#start').val(formatDate(start));
+                             $('#end').val(formatDate(end));
+                             $('#timeMenu').html('Today <b class="caret"></b>');
+                         };
+
                          var today =  function() {
                              var start = new Date();
                              var end = new Date();
