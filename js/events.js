@@ -53,19 +53,14 @@ var arrdata = function(indata) {
 };
 
 var renderTimeline = function(arrdata) {
-    //var machines = [];
     var data = new google.visualization.DataTable();
     // This, unfortunately, doesn't seem to do anything.
-    var dfmt = new google.visualization.DateFormat({ pattern: 'MMM d, yyyy h:mm:ss aa' });
 
     data.addColumn({type: 'string', id: 'Machine'});
     data.addColumn({type: 'string', id: 'Program'});
     data.addColumn({type: 'date', id: 'Start'});
     data.addColumn({type: 'date', id: 'End'});
     data.addRows(arrdata);
-    dfmt.format(data, 2);
-    dfmt.format(data, 3);
-    /* // console.log(JSON.stringify(data));*/
     $("#chart").fadeIn(2000);
     var ch = document.getElementById('chart');
     var chart = new google.visualization.Timeline(ch);
@@ -77,10 +72,9 @@ var renderTimeline = function(arrdata) {
             viewWindowMode: 'pretty',
             minValue: new Date(document.getElementById('start').value),
             maxValue: new Date(document.getElementById('end').value),
-            format: 'h:mm'
+            format: 'h:mm aa'
         }
     };
-    // chart.setVisibleChartRange(new Date(s), new Date(e));
     chart.draw(data, options);
 };
 
@@ -152,7 +146,7 @@ var renderPies = function(inp) {
     var pie_options = {
         title: 'Selected Range',
         colors: ['#f3f01e', '#108a00', '#e60000' ],
-        pieHole: 0.4,
+        pieHole: 0.2,
         slices: { 0: {offset: 0.1},
                   1: {offset: 0.1}},
         //chartArea: {width:'101%', height:'101%'}
@@ -175,7 +169,7 @@ var renderPies = function(inp) {
     var pie_options2 = {
         title: 'Last Week',
         colors: ['#f3f01e', '#108a00', '#e60000' ],
-        pieHole: 0.4,
+        pieHole: 0.2,
         slices: { 0: {offset: 0.1},
                   1: {offset: 0.1}},
         //chartArea: {width:'105%', height:'105%'}
