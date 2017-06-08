@@ -220,7 +220,7 @@ date_default_timezone_set('America/Detroit');
                              start.setSeconds(0);
                              start.setDate(start.getDate() - 1);
 
-                             end.setDate(end.getDate() + (6 - end.getDay()));
+                             /* end.setDate(end.getDate() + (6 - end.getDay()));*/
                              end.setHours(14);
                              end.setMinutes(30);
                              end.setSeconds(0);
@@ -320,6 +320,11 @@ date_default_timezone_set('America/Detroit');
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="navbar navbar-fixed-bottom">
+            <ul class="nav navbar-nav">
+                <li><a href="cycles.html" style="color:black;">About</a> </li>
+            </ul>
         </div>
         <div id="modalAlert" class="modal fade">
             <div class="modal-dialog">
