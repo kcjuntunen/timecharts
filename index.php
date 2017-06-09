@@ -321,9 +321,11 @@ date_default_timezone_set('America/Detroit');
                 </div>
             </div>
         </div>
-        <div class="navbar navbar-fixed-bottom">
-            <ul class="nav navbar-nav">
-                <li><a href="cycles.html" style="color:black;">About</a> </li>
+        <div class="navbar navbar-bottom">
+            <ul class="nav navbar-nav nav-right">
+                <li><a href="cycles.html" style="color:black;"><span class="glyphicon glyphicon-user"></span> About</a></li>
+                <li><a href="#" id="log" style="color:black;"><span class="nav-right glyphicon glyphicon-th-list"></span> <i>Log</i></a></li>
+
             </ul>
         </div>
         <div id="modalAlert" class="modal fade">

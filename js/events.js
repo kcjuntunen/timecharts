@@ -205,6 +205,43 @@ var loadChart = function() {
     //drawMultSeries($('input#start').val(), $('input#end').val(), $('input#machineClicked').text());
 };
 
+var makeTable = function () {
+    $.ajax({url: 'getLog.php',
+            data: null,
+            dataType: "json",
+            complete: rLog});
+}
+
+
+var rLog = function(indata) {
+    console.log(indata);
+    var jdata = JSON.parse(indata.responseText);
+    var fmt_data = [];
+    var fmt_datatable = new google.visualization.DataTable();
+    fmt_datatable.addColumn('date', 'Timestamp', 'Timestamp');
+    fmt_datatable.addColumn('string', 'Machine', 'Machine');
+    fmt_datatable.addColumn('string', 'Event', 'Event');
+
+    for (var j = 0, jn = jdata.length; j < jn; j++) {
+        var str = jdata[j]["event"].replace(/\"/gi, "\\\"");
+        var lDate = new Date(jdata[j]["timestamp"].toString());
+        fmt_data.push([
+            lDate,
+            jdata[j]["machine"],
+            str
+        ]);
+    }
+    fmt_datatable.addRows(fmt_data);
+    fmt = new google.visualization.DateFormat({ pattern: 'MMM d, yyyy h:mm:ss aa' });
+    fmt.format(fmt_datatable, 0);
+    var tbl = new google.visualization.Table(document.getElementById('tbls'));
+    tbl.draw(fmt_datatable,
+             {
+                 showRowNumber: false
+             }
+            );
+}
+
 $(document).ready(
     function() {
         // window.onerror = function(errorMsg) {
@@ -212,6 +249,7 @@ $(document).ready(
         // };
 
         $('#chart').fadeOut(0);
+        $('a#log').on('click', makeTable);
         $('button#load').on('click', loadChart);
     }
 );
