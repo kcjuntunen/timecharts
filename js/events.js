@@ -21,7 +21,7 @@ var drawMultSeries = function (strt, nd, mach) {
 
 var r = function(indata) {
     var jdata = JSON.parse(indata.responseText);
-    x = arrdata(jdata['data']);
+    x = arrdata(jdata);
     renderTimeline(x);
     renderTables(x);
 };
@@ -46,16 +46,14 @@ var arrdata = function(indata) {
         }
 
         res.push([indata[i][0], indata[i][1],
-                  new Date(indata[i][2].replace(/-/gi, '/')),
-                  new Date(indata[i][3].replace(/-/gi, '/'))]);
+                  new Date(indata[i][2]),
+                  new Date(indata[i][3])]);
     }
     return res;
 };
 
 var renderTimeline = function(arrdata) {
     var data = new google.visualization.DataTable();
-    // This, unfortunately, doesn't seem to do anything.
-
     data.addColumn({type: 'string', id: 'Machine'});
     data.addColumn({type: 'string', id: 'Program'});
     data.addColumn({type: 'date', id: 'Start'});
@@ -103,7 +101,6 @@ var renderTables = function(data) {
                 sec = sec.toString().search('NaN') > -1 ? 0 : sec;
                 sec = sec < 10 ? '0' + sec : sec;
                 var strDate = (min + ':' + sec).split('.')[0];
-                //strDate = strDate.search('NaN') > -1 ? '--' : strDate;
                 fmt_data.push([
                     data[j][0],
                     data[j][1],
@@ -149,7 +146,6 @@ var renderPies = function(inp) {
         pieHole: 0.2,
         slices: { 0: {offset: 0.1},
                   1: {offset: 0.1}},
-        //chartArea: {width:'101%', height:'101%'}
     };
 
     var pie = document.getElementById('pie');
@@ -178,13 +174,6 @@ var renderPies = function(inp) {
     var pie2 = document.getElementById('pie2');
     var pie_chart2 = new google.visualization.PieChart(pie2);
     pie_chart2.draw(piedata2, pie_options2);
-    // var fadepie = $('#piecontainer');
-    // var fadepie2 = $('#pie2container');
-    // fadepie.fadeOut(0);
-    // fadepie2.fadeOut(0);
-
-    // fadepie.fadeIn();
-    // fadepie2.fadeIn();
 };
 
 var loadChart = function() {
@@ -202,7 +191,6 @@ var loadChart = function() {
         return;
     }
     drawMultSeries(starttime, endtime, machine_clicked);
-    //drawMultSeries($('input#start').val(), $('input#end').val(), $('input#machineClicked').text());
 };
 
 var makeTable = function () {
@@ -210,7 +198,7 @@ var makeTable = function () {
             data: null,
             dataType: "json",
             complete: rLog});
-}
+};
 
 
 var rLog = function(indata) {
@@ -223,11 +211,11 @@ var rLog = function(indata) {
     fmt_datatable.addColumn('string', 'Event', 'Event');
 
     for (var j = 0, jn = jdata.length; j < jn; j++) {
-        var str = jdata[j]["event"].replace(/\"/gi, "\\\"");
-        var lDate = new Date(jdata[j]["timestamp"].toString());
+        var str = jdata[j]["EVENT"];
+        var lDate = new Date(jdata[j]["TS"]);
         fmt_data.push([
             lDate,
-            jdata[j]["machine"],
+            jdata[j]["MACHINE"],
             str
         ]);
     }
@@ -240,14 +228,10 @@ var rLog = function(indata) {
                  showRowNumber: false
              }
             );
-}
+};
 
 $(document).ready(
     function() {
-        // window.onerror = function(errorMsg) {
-        //     $('#console').html($('#console').html()+'<br>'+errorMsg)
-        // };
-
         $('#chart').fadeOut(0);
         $('a#log').on('click', makeTable);
         $('button#load').on('click', loadChart);
