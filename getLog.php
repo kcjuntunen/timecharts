@@ -9,7 +9,10 @@ function returnRawLog($conn) {
     $sql = "SELECT MACHINE, TS, EVENT FROM CUT_CYCLE_EVENTS ORDER BY ID DESC LIMIT 100";
     $res = $conn->query($sql);
     while ($a = $res->fetch_assoc()) {
-        $output[] = $a;
+        $output[] = array(
+            'MACHINE' => $a['MACHINE'],
+            'TS' => str_replace('-', '/', $a['TS'] . " UTC"),
+            'EVENT' => $a['EVENT']);
     }
     return json_encode($output);
 }

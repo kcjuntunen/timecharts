@@ -91,11 +91,12 @@ function get_last_week($conn) {
 if (isset($_REQUEST['start']) && isset($_REQUEST['end'])) {
     $beg = strtotime($_REQUEST['start']);
     $end = strtotime($_REQUEST['end']);
-    $sr = get_selected_range($beg, $end, $mysqli);
-    $lw = get_last_week($mysqli);
-    echo "[{ \"total\": {$sr['total']}, \"setup\": {$sr['setup']}, \"cycle\": {$sr['cycle']}}, "
-        . "{ \"total\": {$lw['total']}, \"setup\": {$lw['setup']}, \"cycle\": {$lw['cycle']}}]";
-
+    echo json_encode(
+        array(
+            get_selected_range($beg, $end, $mysqli),
+            get_last_week($mysqli)
+        )
+    );
     $mysqli->close();
 }
 ?>
