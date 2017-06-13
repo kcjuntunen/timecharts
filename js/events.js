@@ -85,11 +85,13 @@ var renderTables = function(data) {
         fmt_datatable.addColumn('date', 'Start', 'Start');
         fmt_datatable.addColumn('date', 'End', 'End');
         fmt_datatable.addColumn('string', 'Diff (min:sec)', 'Diff');
-        $("#tbls").append("<button type=\"button\" class=\"btn btn-info\" data-toggle=\"collapse\" data-target=\"#m" + machines[i] +
-                          "\"></ br>"  + machines[i] +
-                          "</button>" +
-                          "<div id=\"m" + machines[i] +
-                          "\" class=\"collapse\"></div>");
+        if (document.getElementById("m" + machines[i]) === null) {
+            $("#tbls").append("<button type=\"button\" class=\"btn btn-info\" data-toggle=\"collapse\" data-target=\"#m" + machines[i] +
+                              "\"></ br>"  + machines[i] +
+                              "</button>" +
+                              "<div id=\"m" + machines[i] +
+                              "\" class=\"collapse\"></div>");
+        }
         for(var j = 0, jn = data.length; j < jn; j++) {
             if (data[j][0] === machines[i]) {
                 var sDate = new Date(data[j][2].toString());
@@ -222,7 +224,12 @@ var rLog = function(indata) {
     fmt_datatable.addRows(fmt_data);
     fmt = new google.visualization.DateFormat({ pattern: 'MMM d, yyyy h:mm:ss aa' });
     fmt.format(fmt_datatable, 0);
-    var tbl = new google.visualization.Table(document.getElementById('tbls'));
+    if (document.getElementById("logtbl") === null) {
+        $("#tbls").append("<button type=\"button\" class=\"btn btn-info\" data-toggle=\"collapse\" " +
+                          "data-target=\"#logtbl\">Log</button>" +
+                          "<div id=\"logtbl\" class=\"collapse\"></div>");
+    }
+    var tbl = new google.visualization.Table(document.getElementById('logtbl'));
     tbl.draw(fmt_datatable,
              {
                  showRowNumber: false
