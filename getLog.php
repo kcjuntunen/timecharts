@@ -4,9 +4,17 @@ $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config[
 $tz = 'UTC';
 date_default_timezone_set($tz);
 
-function returnRawLog($conn) {
+function returnRawLog($start, $stop, $machine, $conn) {
     $output = array();
-    $sql = "SELECT MACHINE, TS, EVENT FROM CUT_CYCLE_EVENTS ORDER BY ID DESC LIMIT 100";
+    $sql = "SELECT MACHINE, TS, EVENT FROM CUT_CYCLE_EVENTS ";
+    if (($start != NULL) && ($stop != NULL)) {
+        $sql .= "WHERE TS > '$start' AND TS < '$stop' ";
+        if ($machine != NULL) {
+            $sql .= "AND MACHINE = '$machine' ";
+        }
+    } else {
+        $sql .= "ORDER BY ID DESC LIMIT 50";
+    }
     $res = $conn->query($sql);
     while ($a = $res->fetch_assoc()) {
         $output[] = array(
@@ -17,5 +25,16 @@ function returnRawLog($conn) {
     return json_encode($output);
 }
 
-echo returnRawLog($mysqli);
+if (isset($_REQUEST['start']) && isset($_REQUEST['end'])) {
+    $beg = date('Y-m-d\TH:i:s', strtotime($_REQUEST['start']));
+    $end = date('Y-m-d\TH:i:s', strtotime($_REQUEST['end']));
+    if (isset($_REQUEST['machine'])) {
+        $machine = $mysqli->real_escape_string($_REQUEST['machine']);
+    } else {
+        $machine = NULL;
+    }
+    echo returnRawLog($beg, $end, $machine, $mysqli);
+} else {
+    echo returnRawLog(NULL, NULL, NULL, $mysqli);
+}
 ?>

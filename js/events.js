@@ -196,8 +196,16 @@ var loadChart = function() {
 };
 
 var makeTable = function () {
+    var strt = document.getElementById("start").value;
+    var nd = document.getElementById("end").value;
+    var mach = document.getElementById("machineClicked").textContent;
+    var datstring = "start=" + new Date(strt).toUTCString() + "&end=" + new Date(nd).toUTCString();
+    if (mach != '') {
+        datstring += "&machine=" + mach;
+    }
+
     $.ajax({url: 'getLog.php',
-            data: null,
+            data: datstring,
             dataType: "json",
             complete: rLog});
 };
@@ -232,6 +240,7 @@ var rLog = function(indata) {
     var tbl = new google.visualization.Table(document.getElementById('logtbl'));
     tbl.draw(fmt_datatable,
              {
+                 height: '256px',
                  showRowNumber: false
              }
             );
