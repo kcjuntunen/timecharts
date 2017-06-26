@@ -13,8 +13,9 @@ function returnRawLog($start, $stop, $machine, $conn) {
             $sql .= "AND MACHINE = '$machine' ";
         }
     } else {
-        $sql .= "ORDER BY ID DESC LIMIT 50";
+        // $sql .= "ORDER BY ID DESC LIMIT 50";
     }
+    $sql .= "ORDER BY ID DESC ";
     $res = $conn->query($sql);
     while ($a = $res->fetch_assoc()) {
         $output[] = array(
