@@ -4,6 +4,9 @@ $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config[
 $tz = 'UTC';
 date_default_timezone_set($tz);
 
+function convert_date($time) {
+    return date('Y-m-d\TH:i:s', $time);
+}
 function count_machines($conn) {
     $machine_count = 0;
     if (isset($_REQUEST['machine'])) {
@@ -11,7 +14,7 @@ function count_machines($conn) {
         return $machine_count;
     }
 
-    $machine_list = $conn->query('SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES');
+    $machine_list = $conn->query('SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES ORDER BY MACHNUM');
     while ($machine = $machine_list->fetch_assoc()) {
         $machine_count++;
     }
@@ -34,8 +37,8 @@ function get_total_seconds($beg, $end, $machine_count) {
 
 function get_total_time($beg, $end, $setup, $conn) {
     $total_time = 0;
-    $starttime = date('Y-m-d\TH:i:s', $beg);
-    $stoptime = date('Y-m-d\TH:i:s', $end);
+    $starttime = convert_date($beg);
+    $stoptime = convert_date($end);
     $machines = array();
 
     if (isset($_REQUEST['machine'])) {
@@ -49,7 +52,12 @@ function get_total_time($beg, $end, $setup, $conn) {
     }
 
     foreach ($machines as &$machnum) {
-        $total_time += get_time($conn, $machnum, $setup, $starttime, $stoptime);
+        if ($setup) {
+            $total_time += get_time($conn, $machnum, $setup, $starttime, $stoptime);
+        } else {
+            $total_time += get_time($conn, $machnum, $setup, $starttime, $stoptime) -
+                         concurrent_cycles($conn, $machnum, $starttime, $stoptime);
+        }
     }
     return $total_time;
 }
@@ -57,9 +65,8 @@ function get_total_time($beg, $end, $setup, $conn) {
 function get_time($conn, $machnum, $setup, $starttime, $stoptime) {
     $stp = $setup ? "True" : "False";
     $sql = "SELECT SUM(TIMESTAMPDIFF(SECOND, STARTTIME, STOPTIME)) AS DIFF FROM CUT_CYCLE_TIMES "
-         . "WHERE MACHNUM=$machnum AND "
+         . "WHERE MACHNUM='$machnum' AND "
          . "SETUP=$stp AND STARTTIME > '$starttime' AND STOPTIME < '$stoptime'";
-    //echo var_dump($sql);
     $data = $conn->query($sql);
     $res = 0;
     if (!$data) {
@@ -69,6 +76,30 @@ function get_time($conn, $machnum, $setup, $starttime, $stoptime) {
         $res += $a['DIFF'];
     }
     $data->free();
+    return $res;
+}
+
+function concurrent_cycles($conn, $machnum, $starttime, $stoptime) {
+    $res = 0;
+    $setups = array();
+    $sql = "SELECT STARTTIME, STOPTIME FROM CUT_CYCLE_TIMES "
+         . "WHERE MACHNUM='$machnum' AND "
+         . "SETUP=True AND STARTTIME > '$starttime' AND STOPTIME < '$stoptime'";
+    $setups_res = $conn->query($sql);
+    while ($s = $setups_res->fetch_assoc()) {
+        $setups[] = $s;
+    }
+    $setups_res->free();
+    foreach ($setups as &$setup) {
+        $sql = "SELECT SUM(TIMESTAMPDIFF(SECOND, STARTTIME, STOPTIME)) AS DIFF FROM CUT_CYCLE_TIMES "
+             . "WHERE MACHNUM=$machnum AND "
+             . "SETUP=False AND STARTTIME > '{$setup['STARTTIME']}' AND STOPTIME < '{$setup['STOPTIME']}'";
+        $cycle_seconds = $conn->query($sql);
+        while ($a = $cycle_seconds->fetch_assoc()) {
+            $res += $a['DIFF'];
+        }
+        $cycle_seconds->free();
+    }
     return $res;
 }
 
