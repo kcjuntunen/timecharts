@@ -78,7 +78,7 @@ date_default_timezone_set('America/Detroit');
                         if ($mysqli->connect_errno) {
                             echo "{$mysqli->connect_errno}: {$mysqli->connect_error}";
                         }
-                        $result = $mysqli->query("SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES");
+                        $result = $mysqli->query("SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES ORDER BY MACHNUM");
                         while ($c = $result->fetch_assoc()) {
                             $machnum = $c['MACHNUM'];
                             echo "<li id='$machnum'><a href='#'>$machnum</a></li>" . "\n";

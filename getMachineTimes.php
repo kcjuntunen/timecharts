@@ -3,7 +3,7 @@ $config = parse_ini_file('/etc/cycles.conf');
 $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
 $tz = 'UTC';
 date_default_timezone_set($tz);
-$machine_list_data = $mysqli->query("SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES");
+$machine_list_data = $mysqli->query("SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES ORDER BY MACHNUM");
 $beg = date('Y-m-d\TH:i:s', strtotime($_REQUEST["start"]));
 $end = date('Y-m-d\TH:i:s', strtotime($_REQUEST["end"]));
 
