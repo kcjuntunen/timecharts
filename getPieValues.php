@@ -7,6 +7,33 @@ date_default_timezone_set($tz);
 function convert_date($time) {
     return date('Y-m-d\TH:i:s', $time);
 }
+
+function get_breaks($beg, $end) {
+    $starttime = new Datetime(convert_date($beg));
+    $stoptime = new Datetime(convert_date($end));
+    $period = new DatePeriod($starttime, new DateInterval('PT1M'), $stoptime);
+    $break_minutes = 0;
+    foreach($period as $dt) {
+        $hours = (int)$dt->format('H');
+        $minutes = (int)$dt->format('i');
+        # 15 minute breaks
+        if (($hours == 12 || $hours == 14) && ($minutes >= 0 && $minutes <= 15))
+            $break_minutes += 1;
+
+        # Lunch
+        if ($hours == 16 && ($minutes >= 0 && $minutes <= 30))
+            $break_minutes += 1;
+
+        # Off hours
+        if ($hours == 18 && ($minutes >= 30 && $minutes <= 59))
+            $break_minutes += 1;
+
+        if (($hours >= 19 && $hours <= 23) || ($hours >= 0 && $hours <= 10))
+            $break_minutes += 1;
+    }
+    return $break_minutes * 60;
+}
+
 function count_machines($conn) {
     $machine_count = 0;
     if (isset($_REQUEST['machine'])) {
@@ -23,11 +50,13 @@ function count_machines($conn) {
 }
 
 function get_total_seconds($beg, $end, $machine_count) {
-    $total_seconds = ($end - $beg) * $machine_count;
-    $days = ceil($total_seconds / 60 / 60 / 24);
+    $raw_diff = ($end - $beg);
+    $total_seconds = $raw_diff * $machine_count;
+    $days = ceil($raw_diff / 60 / 60 / 24);
     // remove breaks
     // $total_seconds = $total_seconds - ($days * (30 + 15 + 15) * 60);
     // remove off hours
+    //echo var_dump(get_breaks($beg, $end));
     if ($days > 1) {
         $total_seconds = $total_seconds - (($days - 1) * (16 * 60) * 60);
         $total_seconds = $total_seconds - (60 * 60 * ($days - 1));
@@ -114,8 +143,8 @@ function get_selected_range($beg, $end, $conn) {
 }
 
 function get_last_week($conn) {
-    $beg = strtotime('last week monday 06:00');
-    $end = strtotime('last week friday 14:30');
+    $beg = strtotime('last week monday 10:00 GMT');
+    $end = strtotime('last week friday 18:30 GMT');
     return get_selected_range($beg, $end, $conn);
 }
 
