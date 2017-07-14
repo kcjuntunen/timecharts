@@ -181,7 +181,6 @@ timeLine.Render = function(response) {
 };
 
 timeLine.Update = function() {
-    console.log('Interval Update');
     var now = new Date();
     if (timeLine.chartrange_end > now) {
         var mach = $('#machineClicked').text();
@@ -271,7 +270,6 @@ tables.Render = function() {
 };
 
 tables.Update = function () {
-    console.log('table update');
     var raw_data = lastResponse.value.responseJSON;
     var fmt_data = [];
     for(var i = 0; i < machines.length; i++) {
@@ -433,7 +431,6 @@ var InitialRender = function(response) {
     // init events
     var updateTableNotify = {
         notify: function () {
-            console.log('Update event.');
             tables.Update(lastResponse);
             pieChart.Render();
         }
