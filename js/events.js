@@ -44,7 +44,7 @@ var lastResponse = {
 var loadChart = function() {
     chart.fadeOut(0);
 
-    if (endtime <= starttime) {
+    if (new Date(endtime) <= new Date(starttime)) {
         var txt = $("#alertText");
         txt.text('End time ought to be after start time.');
         $("#modalAlert").modal('show');
@@ -85,12 +85,24 @@ var arrange_data = function(indata) {
 };
 
 var GetDatestring = function() {
-    var strt = document.getElementById("start").value;
-    var nd = document.getElementById("end").value;
-    var mach = document.getElementById("machineClicked").textContent;
-    var datstring = "start=" + new Date(starttime).toUTCString() + "&end=" + new Date(nd).toUTCString();
-    if (mach != '') {
-        datstring += "&machine=" + mach;
+    starttime = document.getElementById("start").value;
+    endtime = document.getElementById("end").value;
+    machine_clicked = document.getElementById("machineClicked").textContent;
+    timeLine.options = {
+        //width: 1280,
+        height: 128 * machines.length,
+        timeline: { showBarLabels: false },
+        hAxis: {
+            viewWindowMode: 'pretty',
+            minValue: new Date(starttime),
+            maxValue: new Date(endtime),
+            format: 'h:mm aa'
+        }
+    };
+    timeLine.chartrange_end = timeLine.options.hAxis.maxValue;
+    var datstring = "start=" + new Date(starttime).toUTCString() + "&end=" + new Date(endtime).toUTCString();
+    if (machine_clicked != '') {
+        datstring += "&machine=" + machine_clicked;
     }
     return datstring;
 };
@@ -135,6 +147,20 @@ var tableData = function(timelineData) {
     };
 };
 
+timeLine.options = {};
+timeLine.chartrange_end = null;
+timeLine.Chart = null;
+timeLine.lastEnrtyStopTime = function() {
+    var last_entry_stoptime = new Date(new Date(document.getElementById('start').value).toUTCString());
+    for (i = 0, j = data.og.length; i < j; i++) {
+        var val = data.og[i].c[3].v;
+        if (val > last_entry_stoptime) {
+            last_entry_stoptime = val;
+        }
+    };
+    return last_entry_stoptime;
+};
+
 timeLine.Render = function(response) {
     this.data = data = new google.visualization.DataTable();
     this.data.addColumn({type: 'string', id: 'Machine'});
@@ -143,36 +169,12 @@ timeLine.Render = function(response) {
     this.data.addColumn({type: 'date', id: 'End'});
 
     lastResponse.setValue(response);
-    var parsed = JSON.parse(lastResponse.value.responseText);
-    this.data.addRows(arrange_data(parsed));
+    var parsed = lastResponse.value.responseJSON;
+    this.data.addRows(arrange_data_with_warning(parsed));
 
     chart.fadeIn(2000);
-    var ch = new google.visualization.Timeline(document.getElementById('chart'));
-    var options = {
-        //width: 1280,
-        height: 128 * machines.length,
-        timeline: { showBarLabels: false },
-        hAxis: {
-            viewWindowMode: 'pretty',
-            minValue: new Date(document.getElementById('start').value),
-            maxValue: new Date(document.getElementById('end').value),
-            format: 'h:mm aa'
-        }
-    };
-
-    ch.draw(data, options);
-
-    this.chartrange_end = options.hAxis.maxValue;
-    this.lastEnrtyStopTime = function () {
-        var last_entry_stoptime = new Date(new Date(document.getElementById('start').value).toUTCString());
-        for (i = 0, j = data.og.length; i < j; i++) {
-            var val = data.og[i].c[3].v;
-            if (val > last_entry_stoptime) {
-                last_entry_stoptime = val;
-            }
-        };
-        return last_entry_stoptime;
-    };
+    timeLine.Chart = new google.visualization.Timeline(document.getElementById('chart'));
+    timeLine.Chart.draw(this.data, timeLine.options);
 
     var t = setInterval(this.Update, 10000);
     setTimeout(function() { clearInterval(t); }, Math.abs(this.chartrange_end - new Date()));
@@ -181,17 +183,19 @@ timeLine.Render = function(response) {
 timeLine.Update = function() {
     console.log('Interval Update');
     var now = new Date();
-    if (this.chartrange_end > now) {
+    if (timeLine.chartrange_end > now) {
         var mach = $('#machineClicked').text();
-        var datstring = "start=" + lastEnrtyStopTime().toUTCString() +
-                "&end=" + new Date(chartrange_end).toUTCString();
+        var datstring = "start=" + timeLine.lastEnrtyStopTime().toUTCString() +
+                "&end=" + new Date(timeLine.chartrange_end).toUTCString();
 
         var reDraw = function(d) {
-            lastResponse.setValue(d);
-            var jdata = JSON.parse(d.responseText);
-            x = arrange_data(jdata);
-            data.addRows(x);
-            ch.draw(data, options);
+            if (d.responseJSON.length > 0) {
+                lastResponse.setValue(d);
+                var jdata = d.responseJSON;
+                x = arrange_data(jdata);
+                timeLine.data.addRows(x);
+                timeLine.Chart.draw(timeLine.data, timeLine.options);
+            }
         };
 
         if (mach != '') {
@@ -206,23 +210,28 @@ timeLine.Update = function() {
 };
 
 
-tables.initialated = false;
+tables.innerArray = [];
+
 tables.Render = function() {
-    var raw_data = JSON.parse(lastResponse.value.responseText);
+    var raw_data = lastResponse.value.responseJSON;
     var fmt_data = [];
     for(var i = 0; i < machines.length; i++) {
         var data = new google.visualization.DataTable();
-        data.addColumn('string', 'Machine', 'Machine');
-        data.addColumn('string', 'Program', 'Machine');
-        data.addColumn('date', 'Start', 'Start');
-        data.addColumn('date', 'End', 'End');
-        data.addColumn('string', 'Diff (min:sec)', 'Diff');
         if (document.getElementById("m" + machines[i]) === null) {
+            data.addColumn('string', 'Machine', 'Machine');
+            data.addColumn('string', 'Program', 'Machine');
+            data.addColumn('date', 'Start', 'Start');
+            data.addColumn('date', 'End', 'End');
+            data.addColumn('string', 'Diff (min:sec)', 'Diff');
             $("#tbls").append("<button type=\"button\" class=\"btn btn-info\" data-toggle=\"collapse\" data-target=\"#m" + machines[i] +
                               "\"></ br>"  + machines[i] +
                               "</button>" +
                               "<div id=\"m" + machines[i] +
                               "\" class=\"collapse\"></div>");
+            var tb = new google.visualization.Table(document.getElementById("m" + machines[i]));
+            this.innerArray.push({table: tb, dataTable: data});
+        } else {
+            data = this.innerArray[i].dataTable;
         }
         for(var j = 0, jn = raw_data.length; j < jn; j++) {
             if (raw_data[j][0] === machines[i]) {
@@ -246,7 +255,7 @@ tables.Render = function() {
         }
 
         data.addRows(fmt_data);
-        var tbl = new google.visualization.Table(document.getElementById("m" + machines[i]));
+        var tbl = this.innerArray[i].table;
         fmt = new google.visualization.DateFormat(
             { pattern: 'MMM d, yyyy h:mm:ss aa' });
         fmt.format(data, 2);
@@ -259,25 +268,29 @@ tables.Render = function() {
                 );
         fmt_data = [];
     }
-    this.initialated = true;
 };
 
 tables.Update = function () {
-    var raw_data = JSON.parse(lastResponse.value.responseText);
+    console.log('table update');
+    var raw_data = lastResponse.value.responseJSON;
     var fmt_data = [];
     for(var i = 0; i < machines.length; i++) {
         var data = new google.visualization.DataTable();
-        data.addColumn('string', 'Machine', 'Machine');
-        data.addColumn('string', 'Program', 'Machine');
-        data.addColumn('date', 'Start', 'Start');
-        data.addColumn('date', 'End', 'End');
-        data.addColumn('string', 'Diff (min:sec)', 'Diff');
         if (document.getElementById("m" + machines[i]) === null) {
+            data.addColumn('string', 'Machine', 'Machine');
+            data.addColumn('string', 'Program', 'Machine');
+            data.addColumn('date', 'Start', 'Start');
+            data.addColumn('date', 'End', 'End');
+            data.addColumn('string', 'Diff (min:sec)', 'Diff');
             $("#tbls").append("<button type=\"button\" class=\"btn btn-info\" data-toggle=\"collapse\" data-target=\"#m" + machines[i] +
                               "\"></ br>"  + machines[i] +
                               "</button>" +
                               "<div id=\"m" + machines[i] +
                               "\" class=\"collapse\"></div>");
+            var tb = new google.visualization.Table(document.getElementById("m" + machines[i]));
+            this.innerArray.push({table: tb, dataTable: data});
+        } else {
+            data = this.innerArray[i].dataTable;
         }
         for(var j = 0, jn = raw_data.length; j < jn; j++) {
             if (raw_data[j][0] === machines[i]) {
@@ -301,7 +314,7 @@ tables.Update = function () {
         }
 
         data.addRows(fmt_data);
-        var tbl = new google.visualization.Table(document.getElementById("m" + machines[i]));
+        var tbl = this.innerArray[i].table;
         fmt = new google.visualization.DateFormat(
             { pattern: 'MMM d, yyyy h:mm:ss aa' });
         fmt.format(data, 2);
@@ -318,7 +331,7 @@ tables.Update = function () {
 
 pieChart.Render = function() {
     var draw = function(response) {
-        input = JSON.parse(response.responseText);
+        input = response.responseJSON;
         ////////////////////////////////////////////////////////////////////////////////
         // Pie 1
         ////////////////////////////////////////////////////////////////////////////////
@@ -372,6 +385,40 @@ pieChart.Render = function() {
 };
 
 var makeTable = function () {
+    var rLog = function(indata) {
+        var jdata = indata.responseJSON;
+        var fmt_data = [];
+        var fmt_datatable = new google.visualization.DataTable();
+        fmt_datatable.addColumn('date', 'Timestamp', 'Timestamp');
+        fmt_datatable.addColumn('string', 'Machine', 'Machine');
+        fmt_datatable.addColumn('string', 'Event', 'Event');
+
+        for (var j = 0, jn = jdata.length; j < jn; j++) {
+            var str = jdata[j]["EVENT"];
+            var lDate = new Date(jdata[j]["TS"]);
+            fmt_data.push([
+                lDate,
+                jdata[j]["MACHINE"],
+                str
+            ]);
+        }
+        fmt_datatable.addRows(fmt_data);
+        fmt = new google.visualization.DateFormat({ pattern: 'MMM d, yyyy h:mm:ss aa' });
+        fmt.format(fmt_datatable, 0);
+        if (document.getElementById("logtbl") === null) {
+            $("#tbls").append("<button type=\"button\" class=\"btn btn-info\" data-toggle=\"collapse\" " +
+                              "data-target=\"#logtbl\">Log</button>" +
+                              "<div id=\"logtbl\" class=\"collapse\"></div>");
+        }
+        var tbl = new google.visualization.Table(document.getElementById('logtbl'));
+        tbl.draw(fmt_datatable,
+                 {
+                     height: '256px',
+                     showRowNumber: false
+                 }
+                );
+    };
+
     $.ajax({url: 'getLog.php',
             data: GetDatestring(),
             dataType: "json",
@@ -405,14 +452,9 @@ var drawMultSeries = function (strt, nd, mach) {
         }
 
         $.ajax({url: 'getMachineTimes.php',
-                data: datstring,
+                data: GetDatestring(),
                 dataType: "json",
                 complete: InitialRender});
-
-        // $.ajax({url: 'getPieValues.php',
-        //         data: datstring,
-        //         dataType: "json",
-        //         complete: renderPies});
     }
 };
 
@@ -420,13 +462,27 @@ $(document).ready(
     function() {
         google.charts.load('current', {packages: ['timeline', 'corechart', 'bar', 'table']});
         google.charts.setOnLoadCallback(drawMultSeries);
-        // init global vars
-        starttime = new Date(new Date(document.getElementById('start').value).toUTCString());
-        endtime = new Date(new Date(document.getElementById('end').value).toUTCString());
-        machine_clicked = $('#machineClicked').text();
+        starttime = document.getElementById("start").value;
+        endtime = document.getElementById("end").value;
+        machine_clicked = document.getElementById("machineClicked").textContent;
 
+        timeLine.options = {
+            //width: 1280,
+            height: 128 * machines.length,
+            timeline: { showBarLabels: false },
+            hAxis: {
+                viewWindowMode: 'pretty',
+                minValue: new Date(starttime),
+                maxValue: new Date(endtime),
+                format: 'h:mm aa'
+            }
+        };
+        timeLine.chartrange_end = timeLine.options.hAxis.maxValue;
+
+        // init global vars
         chart = $('#chart');
         pie = $('#pie');
+
         // init charts
         $('#chart').fadeOut(0);
         $('a#log').on('click', makeTable);
