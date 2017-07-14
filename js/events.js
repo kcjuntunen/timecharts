@@ -10,6 +10,10 @@ var pie = null;
 var machines = [];
 
 var timeLine = new Object();
+timeLine.options = {};
+timeLine.chartrange_end = null;
+timeLine.Chart = null;
+
 var tables = new Object();
 var pieChart = new Object();
 var lastResponse = {
@@ -107,49 +111,6 @@ var GetDatestring = function() {
     return datstring;
 };
 
-var tableData = function(timelineData) {
-    var fmt_data = [];
-    for(var i = 0; i < machines.length; i++) {
-        var fmt_datatable = new google.visualization.DataTable();
-        fmt_datatable.addColumn('string', 'Machine', 'Machine');
-        fmt_datatable.addColumn('string', 'Program', 'Machine');
-        fmt_datatable.addColumn('date', 'Start', 'Start');
-        fmt_datatable.addColumn('date', 'End', 'End');
-        fmt_datatable.addColumn('string', 'Diff (min:sec)', 'Diff');
-        if (document.getElementById("m" + machines[i]) === null) {
-            $("#tbls").append("<button type=\"button\" class=\"btn btn-info\" data-toggle=\"collapse\" data-target=\"#m" + machines[i] +
-                              "\"></ br>"  + machines[i] +
-                              "</button>" +
-                              "<div id=\"m" + machines[i] +
-                              "\" class=\"collapse\"></div>");
-        }
-
-        for(var j = 0, jn = data.length; j < jn; j++) {
-            if (data[j][0] === machines[i]) {
-                var sDate = new Date(data[j][2].toString());
-                var eDate = new Date(data[j][3].toString());
-                var dDate = (eDate - sDate) / 60000;
-                var min = Math.floor(dDate);
-                var sec = (('.' + dDate.toString().split('.')[1]) * 60);
-                min = min.toString().search('NaN') > -1 ? 0 : min;
-                sec = sec.toString().search('NaN') > -1 ? 0 : sec;
-                sec = sec < 10 ? '0' + sec : sec;
-                var strDate = (min + ':' + sec).split('.')[0];
-                fmt_data.push([
-                    data[j][0],
-                    data[j][1],
-                    sDate,
-                    eDate,
-                    strDate
-                ]);
-            }
-        }
-    };
-};
-
-timeLine.options = {};
-timeLine.chartrange_end = null;
-timeLine.Chart = null;
 timeLine.lastEnrtyStopTime = function() {
     var last_entry_stoptime = new Date(new Date(document.getElementById('start').value).toUTCString());
     for (i = 0, j = data.og.length; i < j; i++) {
@@ -212,61 +173,7 @@ timeLine.Update = function() {
 tables.innerArray = [];
 
 tables.Render = function() {
-    var raw_data = lastResponse.value.responseJSON;
-    var fmt_data = [];
-    for(var i = 0; i < machines.length; i++) {
-        var data = new google.visualization.DataTable();
-        if (document.getElementById("m" + machines[i]) === null) {
-            data.addColumn('string', 'Machine', 'Machine');
-            data.addColumn('string', 'Program', 'Machine');
-            data.addColumn('date', 'Start', 'Start');
-            data.addColumn('date', 'End', 'End');
-            data.addColumn('string', 'Diff (min:sec)', 'Diff');
-            $("#tbls").append("<button type=\"button\" class=\"btn btn-info\" data-toggle=\"collapse\" data-target=\"#m" + machines[i] +
-                              "\"></ br>"  + machines[i] +
-                              "</button>" +
-                              "<div id=\"m" + machines[i] +
-                              "\" class=\"collapse\"></div>");
-            var tb = new google.visualization.Table(document.getElementById("m" + machines[i]));
-            this.innerArray.push({table: tb, dataTable: data});
-        } else {
-            data = this.innerArray[i].dataTable;
-        }
-        for(var j = 0, jn = raw_data.length; j < jn; j++) {
-            if (raw_data[j][0] === machines[i]) {
-                var sDate = new Date(raw_data[j][2].toString());
-                var eDate = new Date(raw_data[j][3].toString());
-                var dDate = (eDate - sDate) / 60000;
-                var min = Math.floor(dDate);
-                var sec = (('.' + dDate.toString().split('.')[1]) * 60);
-                min = min.toString().search('NaN') > -1 ? 0 : min;
-                sec = sec.toString().search('NaN') > -1 ? 0 : sec;
-                sec = sec < 10 ? '0' + sec : sec;
-                var strDate = (min + ':' + sec).split('.')[0];
-                fmt_data.push([
-                    raw_data[j][0],
-                    raw_data[j][1],
-                    sDate,
-                    eDate,
-                    strDate
-                ]);
-            }
-        }
-
-        data.addRows(fmt_data);
-        var tbl = this.innerArray[i].table;
-        fmt = new google.visualization.DateFormat(
-            { pattern: 'MMM d, yyyy h:mm:ss aa' });
-        fmt.format(data, 2);
-        fmt.format(data, 3);
-        tbl.draw(data,
-                 { showRowNumber: true,
-                   width: 1280,
-                   height: 256
-                 }
-                );
-        fmt_data = [];
-    }
+    tables.Update();
 };
 
 tables.Update = function () {
