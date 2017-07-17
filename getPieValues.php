@@ -82,10 +82,10 @@ function get_total_time($beg, $end, $setup, $conn) {
 
     foreach ($machines as &$machnum) {
         if ($setup) {
-            $total_time += get_time($conn, $machnum, $setup, $starttime, $stoptime);
-        } else {
             $total_time += get_time($conn, $machnum, $setup, $starttime, $stoptime) -
                          concurrent_cycles($conn, $machnum, $starttime, $stoptime);
+        } else {
+            $total_time += get_time($conn, $machnum, $setup, $starttime, $stoptime);
         }
     }
     return $total_time;
@@ -124,10 +124,12 @@ function concurrent_cycles($conn, $machnum, $starttime, $stoptime) {
              . "WHERE MACHNUM=$machnum AND "
              . "SETUP=False AND STARTTIME > '{$setup['STARTTIME']}' AND STOPTIME < '{$setup['STOPTIME']}'";
         $cycle_seconds = $conn->query($sql);
-        while ($a = $cycle_seconds->fetch_assoc()) {
-            $res += $a['DIFF'];
+        if ($cycle_seconds) {
+            while ($a = $cycle_seconds->fetch_assoc()) {
+                $res += $a['DIFF'];
+            }
+            $cycle_seconds->free();
         }
-        $cycle_seconds->free();
     }
     return $res;
 }
