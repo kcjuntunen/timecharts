@@ -1,6 +1,7 @@
 google.charts.load('current', {packages: ['timeline', 'corechart', 'bar', 'table']});
 google.charts.setOnLoadCallback(drawMultSeries);
 
+var count = 0;
 var starttime = null;
 var endtime = null;
 var machine_clicked = null;
@@ -47,6 +48,20 @@ var lastResponse = {
 
 var loadChart = function() {
     chart.fadeOut(0);
+    starttime = document.getElementById("start").value;
+    endtime = document.getElementById("end").value;
+    machine_clicked = document.getElementById("machineClicked").textContent;
+    timeLine.options = {
+        //width: 1280,
+        height: 128 * machines.length,
+        timeline: { showBarLabels: false },
+        hAxis: {
+            viewWindowMode: 'pretty',
+            minValue: new Date(starttime),
+            maxValue: new Date(endtime),
+            format: 'h:mm aa'
+        }
+    };
 
     if (new Date(endtime) <= new Date(starttime)) {
         var txt = $("#alertText");
@@ -111,14 +126,44 @@ var GetDatestring = function() {
     return datstring;
 };
 
+var GetNowDatestring = function() {
+    var _st = document.getElementById("start").value;
+    var _nd = document.getElementById("end").value;
+
+    timeLine.options = {
+        //width: 1280,
+        height: 128 * machines.length,
+        timeline: { showBarLabels: false },
+        hAxis: {
+            viewWindowMode: 'pretty',
+            minValue: new Date(_st),
+            maxValue: new Date(_nd),
+            format: 'h:mm aa'
+        }
+    };
+
+    if (new Date(endtime) > new Date()) {
+        _nd = new Date();
+    }
+
+    var _mc = document.getElementById("machineClicked").textContent;
+    timeLine.chartrange_end = timeLine.options.hAxis.maxValue;
+    var datstring = "start=" + new Date(_st).toUTCString() + "&end=" + new Date(_nd).toUTCString();
+    if (_mc != '') {
+        datstring += "&machine=" + _mc;
+    }
+    return datstring;
+};
+
 timeLine.lastEnrtyStopTime = function() {
     var last_entry_stoptime = new Date(new Date(document.getElementById('start').value).toUTCString());
-    for (i = 0, j = data.og.length; i < j; i++) {
-        var val = data.og[i].c[3].v;
+    for (i = 0, j = this.data.og.length; i < j; i++) {
+        var val = this.data.og[i].c[3].v;
         if (val > last_entry_stoptime) {
             last_entry_stoptime = val;
         }
     };
+    console.log("last Entry: " + last_entry_stoptime);
     return last_entry_stoptime;
 };
 
@@ -134,8 +179,8 @@ timeLine.Render = function(response) {
     this.data.addRows(arrange_data_with_warning(parsed));
 
     chart.fadeIn(2000);
-    timeLine.Chart = new google.visualization.Timeline(document.getElementById('chart'));
-    timeLine.Chart.draw(this.data, timeLine.options);
+    this.Chart = new google.visualization.Timeline(document.getElementById('chart'));
+    this.Chart.draw(timeLine.data, timeLine.options);
 
     var t = setInterval(this.Update, 10000);
     setTimeout(function() { clearInterval(t); }, Math.abs(this.chartrange_end - new Date()));
@@ -143,25 +188,25 @@ timeLine.Render = function(response) {
 
 timeLine.Update = function() {
     var now = new Date();
-    if (timeLine.chartrange_end > now) {
+    if (this.chartrange_end > now) {
         var mach = $('#machineClicked').text();
-        var datstring = "start=" + timeLine.lastEnrtyStopTime().toUTCString() +
-                "&end=" + new Date(timeLine.chartrange_end).toUTCString();
+        var datstring = "start=" + this.lastEnrtyStopTime().toUTCString() +
+                "&end=" + new Date(this.chartrange_end).toUTCString();
 
         var reDraw = function(d) {
             if (d.responseJSON.length > 0) {
                 lastResponse.setValue(d);
                 var jdata = d.responseJSON;
                 x = arrange_data(jdata);
-                timeLine.data.addRows(x);
-                timeLine.Chart.draw(timeLine.data, timeLine.options);
+                this.data.addRows(x);
+                this.Chart.draw(timeLine.data, timeLine.options);
             }
         };
 
         if (mach != '') {
             datstring += "&machine=" + mach;
         }
-
+        console.log(++count + " Update query: " + datstring);
         $.ajax({url: 'getMachineTimes.php',
                 data: datstring,
                 dataType: "json",
@@ -284,7 +329,7 @@ pieChart.Render = function() {
         pie_chart2.draw(piedata2, pie_options2);
     };
     $.ajax({url: 'getPieValues.php',
-            data: GetDatestring(),
+            data: GetNowDatestring(),
             dataType: "json",
             complete: draw});
 };
