@@ -17,6 +17,7 @@ timeLine.Chart = null;
 
 var tables = new Object();
 var pieChart = new Object();
+var lastID = 0;
 var lastResponse = {
     value: {},
     events: {},
@@ -89,16 +90,16 @@ var arrange_data = function(indata) {
     if (!Array.isArray(indata) || indata.length < 1) {
         return res;
     }
-    // $("#tbls").html("");
-    var diff = 0;
+    indata.sort();
+    lastID = indata[indata.length - 1][0];
     for (i = 0, d = indata.length; i < d; i++) {
-        if (machines.indexOf(indata[i][0]) < 0) {
-            machines.push(indata[i][0]);
+        if (machines.indexOf(indata[i][1]) < 0) {
+            machines.push(indata[i][1]);
         }
 
-        res.push([indata[i][0], indata[i][1],
-                  new Date(indata[i][2]),
-                  new Date(indata[i][3])]);
+        res.push([indata[i][1], indata[i][2],
+                  new Date(indata[i][3]),
+                  new Date(indata[i][4])]);
     }
     return res;
 };
@@ -167,39 +168,42 @@ timeLine.lastEnrtyStopTime = function() {
     return last_entry_stoptime;
 };
 
-timeLine.Render = function(response) {
-    this.data = data = new google.visualization.DataTable();
-    this.data.addColumn({type: 'string', id: 'Machine'});
-    this.data.addColumn({type: 'string', id: 'Program'});
-    this.data.addColumn({type: 'date', id: 'Start'});
-    this.data.addColumn({type: 'date', id: 'End'});
+timeLine.createTable = function() {
+    var _tmp = data = new google.visualization.DataTable();
+    _tmp.addColumn({type: 'string', id: 'Machine'});
+    _tmp.addColumn({type: 'string', id: 'Program'});
+    _tmp.addColumn({type: 'date', id: 'Start'});
+    _tmp.addColumn({type: 'date', id: 'End'});
+    return _tmp;
+};
 
+timeLine.Render = function(response) {
+    this.data = this.createTable();
     lastResponse.setValue(response);
     var parsed = lastResponse.value.responseJSON;
     this.data.addRows(arrange_data_with_warning(parsed));
 
     chart.fadeIn(2000);
     this.Chart = new google.visualization.Timeline(document.getElementById('chart'));
-    this.Chart.draw(timeLine.data, timeLine.options);
+    this.Chart.draw(this.data, this.options);
 
-    var t = setInterval(this.Update, 10000);
-    setTimeout(function() { clearInterval(t); }, Math.abs(this.chartrange_end - new Date()));
+    var t = setInterval(timeLine.Update, 10000);
+    setTimeout(function() { clearInterval(t); }, Math.abs(timeLine.chartrange_end - new Date()));
 };
 
 timeLine.Update = function() {
     var now = new Date();
-    if (this.chartrange_end > now) {
+    if (timeLine.chartrange_end > now) {
         var mach = $('#machineClicked').text();
-        var datstring = "start=" + this.lastEnrtyStopTime().toUTCString() +
-                "&end=" + new Date(this.chartrange_end).toUTCString();
+        var datstring = "after=" + lastID;
 
         var reDraw = function(d) {
             if (d.responseJSON.length > 0) {
                 lastResponse.setValue(d);
                 var jdata = d.responseJSON;
                 x = arrange_data(jdata);
-                this.data.addRows(x);
-                this.Chart.draw(timeLine.data, timeLine.options);
+                timeLine.data.addRows(x);
+                timeLine.Chart.draw(timeLine.data, timeLine.options);
             }
         };
 
@@ -217,22 +221,33 @@ timeLine.Update = function() {
 
 tables.innerArray = [];
 
+tables.createTable = function () {
+    var _tmp = new google.visualization.DataTable();
+    _tmp.addColumn('string', 'Machine', 'Machine');
+    _tmp.addColumn('string', 'Program', 'Machine');
+    _tmp.addColumn('date', 'Start', 'Start');
+    _tmp.addColumn('date', 'End', 'End');
+    _tmp.addColumn('string', 'Diff (min:sec)', 'Diff');
+    return _tmp;
+
+};
+
 tables.Render = function() {
-    tables.Update();
+    for (var i = 0, len = this.innerArray.length; i < len; i++) {
+        tables.innerArray[i].dataTable = this.createTable();
+    }
+    this.Update();
 };
 
 tables.Update = function () {
+    console.log('table update triggered');
     var raw_data = lastResponse.value.responseJSON;
     var fmt_data = [];
     for(var i = 0; i < machines.length; i++) {
-        var data = new google.visualization.DataTable();
+        var data = this.createTable();
         if (document.getElementById("m" + machines[i]) === null) {
-            data.addColumn('string', 'Machine', 'Machine');
-            data.addColumn('string', 'Program', 'Machine');
-            data.addColumn('date', 'Start', 'Start');
-            data.addColumn('date', 'End', 'End');
-            data.addColumn('string', 'Diff (min:sec)', 'Diff');
-            $("#tbls").append("<button type=\"button\" class=\"btn btn-info\" data-toggle=\"collapse\" data-target=\"#m" + machines[i] +
+            $("#tbls").append("<button type=\"button\" class=\"btn btn-info\" " +
+                              "data-toggle=\"collapse\" data-target=\"#m" + machines[i] +
                               "\"></ br>"  + machines[i] +
                               "</button>" +
                               "<div id=\"m" + machines[i] +
@@ -243,9 +258,9 @@ tables.Update = function () {
             data = this.innerArray[i].dataTable;
         }
         for(var j = 0, jn = raw_data.length; j < jn; j++) {
-            if (raw_data[j][0] === machines[i]) {
-                var sDate = new Date(raw_data[j][2].toString());
-                var eDate = new Date(raw_data[j][3].toString());
+            if (raw_data[j][1] === machines[i]) {
+                var sDate = new Date(raw_data[j][3].toString());
+                var eDate = new Date(raw_data[j][4].toString());
                 var dDate = (eDate - sDate) / 60000;
                 var min = Math.floor(dDate);
                 var sec = (('.' + dDate.toString().split('.')[1]) * 60);
@@ -253,16 +268,14 @@ tables.Update = function () {
                 sec = sec.toString().search('NaN') > -1 ? 0 : sec;
                 sec = sec < 10 ? '0' + sec : sec;
                 var strDate = (min + ':' + sec).split('.')[0];
-                fmt_data.push([
-                    raw_data[j][0],
-                    raw_data[j][1],
-                    sDate,
-                    eDate,
-                    strDate
-                ]);
+                var _tmp =[raw_data[j][1],
+                           raw_data[j][2],
+                           sDate,
+                           eDate,
+                           strDate];
+                fmt_data.push(_tmp);
             }
         }
-
         data.addRows(fmt_data);
         var tbl = this.innerArray[i].table;
         fmt = new google.visualization.DateFormat(
@@ -375,19 +388,10 @@ var makeTable = function () {
             complete: rLog});
 };
 
-var InitialRender = function(response) {
+var Render = function(response) {
     timeLine.Render(response);
     tables.Render();
     pieChart.Render();
-
-    // init events
-    var updateTableNotify = {
-        notify: function () {
-            tables.Update(lastResponse);
-            pieChart.Render();
-        }
-    };
-    lastResponse.register('value', updateTableNotify);
 };
 
 var drawMultSeries = function (strt, nd, mach) {
@@ -403,7 +407,7 @@ var drawMultSeries = function (strt, nd, mach) {
         $.ajax({url: 'getMachineTimes.php',
                 data: GetDatestring(),
                 dataType: "json",
-                complete: InitialRender});
+                complete: Render});
     }
 };
 
@@ -436,5 +440,14 @@ $(document).ready(
         $('#chart').fadeOut(0);
         $('a#log').on('click', makeTable);
         $('button#load').on('click', loadChart);
+
+        // init events
+        var updateTableNotify = {
+            notify: function () {
+                tables.Update(lastResponse);
+                pieChart.Render();
+            }
+        };
+        lastResponse.register('value', updateTableNotify);
     }
 );
