@@ -154,7 +154,10 @@ date_default_timezone_set('America/Detroit');
                          var sixTillNow = function() {
                              var start = new Date();
                              var end = new Date();
-                             start.setHours(6);
+                             if (start.getHours() <= 6)
+                                 start.setHours(start.getHours() - 1);
+                             else
+                                 start.setHours(6);
                              start.setMinutes(0);
                              start.setSeconds(0);
 
