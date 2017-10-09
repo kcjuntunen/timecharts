@@ -34,18 +34,22 @@ function get_breaks($beg, $end) {
     return $break_minutes * 60;
 }
 
-function count_machines($conn) {
+function count_machines($beg, $end, $conn) {
     $machine_count = 0;
     if (isset($_REQUEST['machine'])) {
         $machine_count = 1;
         return $machine_count;
     }
-
-    $machine_list = $conn->query('SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES ORDER BY MACHNUM');
-    while ($machine = $machine_list->fetch_assoc()) {
-        $machine_count++;
+    $start = convert_date($beg);
+    $stop = convert_date($end);
+    $qry = "SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES WHERE STARTTIME > '$start' AND STOPTIME < '$stop' ORDER BY MACHNUM";
+    $machine_list = $conn->query($qry);
+    if ($machine_list) {
+        while ($machine = $machine_list->fetch_assoc()) {
+            $machine_count++;
+        }
+        $machine_list->free();
     }
-    $machine_list->free();
     return $machine_count;
 }
 
@@ -135,7 +139,7 @@ function concurrent_cycles($conn, $machnum, $starttime, $stoptime) {
 }
 
 function get_selected_range($beg, $end, $conn) {
-    $machine_count = count_machines($conn);
+    $machine_count = count_machines($beg, $end, $conn);
     $total_seconds = get_total_seconds($beg, $end, $machine_count);
     $total_setup_time = get_total_time($beg, $end, true, $conn);
     $total_cycle_time = get_total_time($beg, $end, false, $conn);
