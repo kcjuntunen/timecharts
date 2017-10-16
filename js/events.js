@@ -435,6 +435,13 @@ $(document).ready(
         // init global vars
         chart = $('#chart');
         pie = $('#pie');
+        $.ajax({url: 'getLastIndex.php',
+                dataType: "json",
+                complete: function(id) {
+                    console.log("Got " + id.responseJSON.MAX_ID);
+                    lastID = id.responseJSON.MAX_ID;
+                }
+               });
 
         // init charts
         $('#chart').fadeOut(0);
