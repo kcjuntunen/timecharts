@@ -42,7 +42,7 @@ function count_machines($beg, $end, $conn) {
     }
     $start = convert_date($beg);
     $stop = convert_date($end);
-    $qry = "SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES WHERE STARTTIME > '$start' AND STOPTIME < '$stop' ORDER BY MACHNUM";
+    $qry = "SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES"; // WHERE STARTTIME > '$start' AND STOPTIME < '$stop' ORDER BY MACHNUM";
     $machine_list = $conn->query($qry);
     if ($machine_list) {
         while ($machine = $machine_list->fetch_assoc()) {
