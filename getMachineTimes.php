@@ -1,26 +1,7 @@
 <?php
 $tz = 'UTC';
 date_default_timezone_set($tz);
-
-if (isset($_REQUEST["start"])) {
-    setcookie("start", strtotime($_REQUEST["start"]), time() + 60 * 60 * 24 * 30);
-}
-
-if (isset($_REQUEST["end"])) {
-    setcookie("end", strtotime($_REQUEST["end"]), time() + 60 * 60 * 24 * 30);
-}
-
-if (isset($_REQUEST['after'])) {
-    $config = parse_ini_file('/etc/cycles.conf');
-    $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
-    echo json_encode(getAfterID($mysqli));
-    $mysqli->close();
-} else {
-    $config = parse_ini_file('/etc/cycles.conf');
-    $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
-    echo json_encode(getRange($mysqli));
-    $mysqli->close();
-}
+$startstopdefined = true;
 
 function getAfterID($mysqli) {
     $result = array();
@@ -119,5 +100,31 @@ function getRange($mysqli) {
         $machine_list_data->free();
     }
     return $result;
+}
+
+if (isset($_REQUEST["start"])) {
+    setcookie("start", strtotime($_REQUEST["start"]), time() + 60 * 60 * 24 * 30);
+} else {
+    $startstopdefined &= false;
+}
+
+if (isset($_REQUEST["end"])) {
+    setcookie("end", strtotime($_REQUEST["end"]), time() + 60 * 60 * 24 * 30);
+} else {
+    $startstopdefined &= false;
+}
+
+if (isset($_REQUEST['after'])) {
+    $config = parse_ini_file('/etc/cycles.conf');
+    $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
+    echo json_encode(getAfterID($mysqli));
+    $mysqli->close();
+} else if ($startstopdefined) {
+    $config = parse_ini_file('/etc/cycles.conf');
+    $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
+    echo json_encode(getRange($mysqli));
+    $mysqli->close();
+} else {
+    echo "Certain values need to be defined.";
 }
 ?>
