@@ -6,6 +6,14 @@ date_default_timezone_set($tz);
 $machine_list_data = $mysqli->query("SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES ORDER BY MACHNUM");
 
 $result = array();
+if (isset($_REQUEST["start"])) {
+    setcookie("start", strtotime($_REQUEST["start"]), time() + 60 * 60 * 24 * 30);
+}
+
+if (isset($_REQUEST["end"])) {
+    setcookie("end", strtotime($_REQUEST["end"]), time() + 60 * 60 * 24 * 30);
+}
+
 if (isset($_REQUEST['after'])) {
     $id = $mysqli->real_escape_string($_REQUEST['after']);
     if (isset($_REQUEST['machine'])) {

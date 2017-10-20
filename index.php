@@ -45,7 +45,6 @@ date_default_timezone_set('America/Detroit');
                  $('#end').datetimepicker({
                      format: 'YYYY/MM/DD h:mm A'
                  });
-                 sixTillNow();
              });
         </script>
     </head>
@@ -270,11 +269,24 @@ date_default_timezone_set('America/Detroit');
                         <fieldset class="row">
                             <div class="form-group">
                                 <label for="start"><span class="glyphicon glyphicon-time"></span> Start time</label>
-                                <input type="datetime" id="start" class="form-control" name="start" onclick="userSpec();" value="<?php echo date('Y-m-d H:i T', time() - (60 * 60)); ?>">
+                                <input type="datetime" id="start" class="form-control" name="start" onclick="userSpec();" value="<?php
+                                                                                                                                 if (!isset($_COOKIE["start"])) {
+                                                                                                                                     echo date('Y-m-d H:i T', time() - (60 * 60));
+                                                                                                                                 } else {
+                                                                                                                                     echo date('Y-m-d H:i T', $_COOKIE["start"]);
+                                                                                                                                 }
+                                                                                                                                 ?>">
                             </div>
                             <div class="form-group">
                                 <label for="end"><span class="glyphicon glyphicon-time"></span> End time</label>
-                                <input type="datetime" id="end" class="form-control" name="end" onclick="userSpec();" value="<?php echo date('Y-m-d H:i T', time()); ?>"></input>
+                                <input type="datetime" id="end" class="form-control" name="end" onclick="userSpec();" value="<?php
+                                                                                                                             if (!isset($_COOKIE["end"])) {
+                                                                                                                                 echo date('Y-m-d H:i T', time());
+                                                                                                                             } else {
+                                                                                                                                 echo "AAAAAAAAAAAAAAAAAAA";
+                                                                                                                                 echo date('Y-m-d H:i T', $_COOKIE["end"]);
+                                                                                                                             }
+                                                                                                                             ?>"></input>
                             </div>
                             <button id="load" class="btn btn-primary" action="submit"><span class="glyphicon glyphicon-search"></span> <i>Load</i></button>
                             <input style="opacity: 0;" type="text" value= "" id="machineClicked"></input>
