@@ -273,7 +273,8 @@ date_default_timezone_set('America/Detroit');
                                                                                                                                  if (!isset($_COOKIE["start"])) {
                                                                                                                                      echo date('Y-m-d H:i T', time() - (60 * 60));
                                                                                                                                  } else {
-                                                                                                                                     echo date('Y-m-d H:i T', $_COOKIE["start"]);
+                                                                                                                                     $hm = date('H:i T', $_COOKIE["start"]);
+                                                                                                                                     echo date('Y-m-d H:i T', strtotime("$hm now"));
                                                                                                                                  }
                                                                                                                                  ?>">
                             </div>
@@ -283,7 +284,8 @@ date_default_timezone_set('America/Detroit');
                                                                                                                              if (!isset($_COOKIE["end"])) {
                                                                                                                                  echo date('Y-m-d H:i T', time());
                                                                                                                              } else {
-                                                                                                                                 echo date('Y-m-d H:i T', $_COOKIE["end"]);
+                                                                                                                                 $hm = date('H:i T', $_COOKIE["end"]);
+                                                                                                                                 echo date('Y-m-d H:i T', strtotime("$hm now"));
                                                                                                                              }
                                                                                                                              ?>"></input>
                             </div>
