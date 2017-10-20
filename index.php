@@ -283,7 +283,6 @@ date_default_timezone_set('America/Detroit');
                                                                                                                              if (!isset($_COOKIE["end"])) {
                                                                                                                                  echo date('Y-m-d H:i T', time());
                                                                                                                              } else {
-                                                                                                                                 echo "AAAAAAAAAAAAAAAAAAA";
                                                                                                                                  echo date('Y-m-d H:i T', $_COOKIE["end"]);
                                                                                                                              }
                                                                                                                              ?>"></input>
