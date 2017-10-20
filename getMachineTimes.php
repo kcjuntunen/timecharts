@@ -63,9 +63,9 @@ function getAfterID($mysqli) {
                     $display_name, str_replace("-", "/", "$starttime UTC"),
                     str_replace("-", "/", "$stoptime UTC"));
             }
-            $rawdata->free();
-            $machine_list_data->free();
         }
+        $rawdata->free();
+        $machine_list_data->free();
     }
     return $result;
 }
