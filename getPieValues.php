@@ -31,7 +31,7 @@ function get_breaks($beg, $end) {
     return $break_minutes * 60;
 }
 
-function count_machines($beg, $end, $conn) {
+function count_machines($conn) {
     $machine_count = 0;
     if (isset($_REQUEST['machine'])) {
         $machine_count = 1;
@@ -39,7 +39,7 @@ function count_machines($beg, $end, $conn) {
     }
     $start = convert_date($beg);
     $stop = convert_date($end);
-    $qry = "SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES"; // WHERE STARTTIME > '$start' AND STOPTIME < '$stop' ORDER BY MACHNUM";
+    $qry = "SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES";
     $machine_list = $conn->query($qry);
     if ($machine_list) {
         while ($machine = $machine_list->fetch_assoc()) {
@@ -77,32 +77,11 @@ function get_total_time($beg, $end, $setup, $conn) {
     return $total_time;
 }
 
-// function get_time($conn, $machnum, $setup, $starttime, $stoptime) {
-//     $stp = $setup ? "True" : "False";
-//     $sql = "SELECT SUM(TIMESTAMPDIFF(SECOND, STARTTIME, STOPTIME)) AS DIFF FROM CUT_CYCLE_TIMES "
-//          . "WHERE MACHNUM='$machnum' AND "
-//          . "SETUP=$stp AND STARTTIME > '$starttime' AND STOPTIME < '$stoptime'";
-//     $data = $conn->query($sql);
-//     $res = 0;
-//     if (!$data) {
-//         return 0;
-//     }
-//     while ($a = $data->fetch_assoc()) {
-//         $res += $a['DIFF'];
-//     }
-//     $data->free();
-//     return $res;
-// }
-
-function get_ranges() {
-    
-}
-
 function get_selected_range($beg, $end, $conn) {
-    $machine_count = count_machines($beg, $end, $conn);
+    $machine_count = count_machines($conn);
     $total_seconds = get_total_seconds($beg, $end, $machine_count);
-    $total_setup_time = get_total_time($beg, $end, true, $conn);
-    $total_cycle_time = get_total_time($beg, $end, false, $conn);
+    $total_setup_time = get_all_time($conn, true, $beg, $end);
+    $total_cycle_time = get_all_time($conn, false, $beg, $end);
     return array( "total" => $total_seconds,
                   "setup" => $total_setup_time,
                   "cycle" => $total_cycle_time );
