@@ -74,14 +74,14 @@ function get_last_week($conn) {
                   strtotime('last week wednesday 12:00 GMT'),
                   strtotime('last week thursday 12:00 GMT'),
                   strtotime('last week friday 12:00 GMT'));
+    $mcount = count_machines($conn);
     $total = 0;
     $setup = 0;
     $cycle = 0;
 
     foreach($days as $day) {
-        $begend = ['first' => get_first_cycle($conn, $day),
-                   'last' => get_last_cycle($conn, $day)];
-        $total += get_total_seconds($begend['first'], $begend['last'], count_machines($conn));
+        $begend = get_first_last_cycles($conn, $day);
+        $total += get_total_seconds($begend['first'], $begend['last'], $mcount);
         $setup += get_all_time($conn, true, $begend['first'], $begend['last']);
         $cycle += get_all_time($conn, false, $begend['first'], $begend['last']);
     }
