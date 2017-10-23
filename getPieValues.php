@@ -3,10 +3,7 @@ $config = parse_ini_file('/etc/cycles.conf');
 $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
 $tz = 'UTC';
 date_default_timezone_set($tz);
-
-function convert_date($time) {
-    return date('Y-m-d\TH:i:s', $time);
-}
+include('efficiencyFunctions.php');
 
 function get_breaks($beg, $end) {
     $starttime = new Datetime(convert_date($beg));
@@ -53,21 +50,6 @@ function count_machines($beg, $end, $conn) {
     return $machine_count;
 }
 
-function get_total_seconds($beg, $end, $machine_count) {
-    $raw_diff = ($end - $beg);
-    $total_seconds = $raw_diff * $machine_count;
-    $days = ceil($raw_diff / 60 / 60 / 24);
-    // remove breaks
-    // $total_seconds = $total_seconds - ($days * (30 + 15 + 15) * 60);
-    // remove off hours
-    //echo var_dump(get_breaks($beg, $end));
-    if ($days > 1) {
-        $total_seconds = $total_seconds - (($days - 1) * (16 * 60) * 60);
-        $total_seconds = $total_seconds - (60 * 60 * ($days - 1));
-    }
-    return $total_seconds;
-}
-
 function get_total_time($beg, $end, $setup, $conn) {
     $total_time = 0;
     $starttime = convert_date($beg);
@@ -86,56 +68,34 @@ function get_total_time($beg, $end, $setup, $conn) {
 
     foreach ($machines as &$machnum) {
         if ($setup) {
-            $total_time += get_time($conn, $machnum, $setup, $starttime, $stoptime) -
+            $total_time += get_machine_time($conn, $machnum, $setup, $starttime, $stoptime) -
                          concurrent_cycles($conn, $machnum, $starttime, $stoptime);
         } else {
-            $total_time += get_time($conn, $machnum, $setup, $starttime, $stoptime);
+            $total_time += get_machine_time($conn, $machnum, $setup, $starttime, $stoptime);
         }
     }
     return $total_time;
 }
 
-function get_time($conn, $machnum, $setup, $starttime, $stoptime) {
-    $stp = $setup ? "True" : "False";
-    $sql = "SELECT SUM(TIMESTAMPDIFF(SECOND, STARTTIME, STOPTIME)) AS DIFF FROM CUT_CYCLE_TIMES "
-         . "WHERE MACHNUM='$machnum' AND "
-         . "SETUP=$stp AND STARTTIME > '$starttime' AND STOPTIME < '$stoptime'";
-    $data = $conn->query($sql);
-    $res = 0;
-    if (!$data) {
-        return 0;
-    }
-    while ($a = $data->fetch_assoc()) {
-        $res += $a['DIFF'];
-    }
-    $data->free();
-    return $res;
-}
+// function get_time($conn, $machnum, $setup, $starttime, $stoptime) {
+//     $stp = $setup ? "True" : "False";
+//     $sql = "SELECT SUM(TIMESTAMPDIFF(SECOND, STARTTIME, STOPTIME)) AS DIFF FROM CUT_CYCLE_TIMES "
+//          . "WHERE MACHNUM='$machnum' AND "
+//          . "SETUP=$stp AND STARTTIME > '$starttime' AND STOPTIME < '$stoptime'";
+//     $data = $conn->query($sql);
+//     $res = 0;
+//     if (!$data) {
+//         return 0;
+//     }
+//     while ($a = $data->fetch_assoc()) {
+//         $res += $a['DIFF'];
+//     }
+//     $data->free();
+//     return $res;
+// }
 
-function concurrent_cycles($conn, $machnum, $starttime, $stoptime) {
-    $res = 0;
-    $setups = array();
-    $sql = "SELECT STARTTIME, STOPTIME FROM CUT_CYCLE_TIMES "
-         . "WHERE MACHNUM='$machnum' AND "
-         . "SETUP=True AND STARTTIME > '$starttime' AND STOPTIME < '$stoptime'";
-    $setups_res = $conn->query($sql);
-    while ($s = $setups_res->fetch_assoc()) {
-        $setups[] = $s;
-    }
-    $setups_res->free();
-    foreach ($setups as &$setup) {
-        $sql = "SELECT SUM(TIMESTAMPDIFF(SECOND, STARTTIME, STOPTIME)) AS DIFF FROM CUT_CYCLE_TIMES "
-             . "WHERE MACHNUM=$machnum AND "
-             . "SETUP=False AND STARTTIME > '{$setup['STARTTIME']}' AND STOPTIME < '{$setup['STOPTIME']}'";
-        $cycle_seconds = $conn->query($sql);
-        if ($cycle_seconds) {
-            while ($a = $cycle_seconds->fetch_assoc()) {
-                $res += $a['DIFF'];
-            }
-            $cycle_seconds->free();
-        }
-    }
-    return $res;
+function get_ranges() {
+    
 }
 
 function get_selected_range($beg, $end, $conn) {
@@ -149,9 +109,25 @@ function get_selected_range($beg, $end, $conn) {
 }
 
 function get_last_week($conn) {
-    $beg = strtotime('last week monday 10:00 GMT');
-    $end = strtotime('last week friday 18:30 GMT');
-    return get_selected_range($beg, $end, $conn);
+    $days = array(strtotime('last week monday 12:00 GMT'),
+                  strtotime('last week tuesday 12:00 GMT'),
+                  strtotime('last week wednesday 12:00 GMT'),
+                  strtotime('last week thursday 12:00 GMT'),
+                  strtotime('last week friday 12:00 GMT'));
+    $total = 0;
+    $setup = 0;
+    $cycle = 0;
+
+    foreach($days as $day) {
+        $begend = ['first' => get_first_cycle($conn, $day),
+                   'last' => get_last_cycle($conn, $day)];
+        $total += get_total_seconds($begend['first'], $begend['last'], 4);
+        $setup += get_all_time($conn, true, $begend['first'], $begend['last']);
+        $cycle += get_all_time($conn, false, $begend['first'], $begend['last']);
+    }
+    return array( 'total' => $total,
+                  'setup' => $setup,
+                  'cycle' => $cycle);
 }
 
 if (isset($_REQUEST['start']) && isset($_REQUEST['end'])) {
