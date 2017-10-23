@@ -31,25 +31,6 @@ function get_breaks($beg, $end) {
     return $break_minutes * 60;
 }
 
-function count_machines($conn) {
-    $machine_count = 0;
-    if (isset($_REQUEST['machine'])) {
-        $machine_count = 1;
-        return $machine_count;
-    }
-    $start = convert_date($beg);
-    $stop = convert_date($end);
-    $qry = "SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES";
-    $machine_list = $conn->query($qry);
-    if ($machine_list) {
-        while ($machine = $machine_list->fetch_assoc()) {
-            $machine_count++;
-        }
-        $machine_list->free();
-    }
-    return $machine_count;
-}
-
 function get_total_time($beg, $end, $setup, $conn) {
     $total_time = 0;
     $starttime = convert_date($beg);
@@ -100,7 +81,7 @@ function get_last_week($conn) {
     foreach($days as $day) {
         $begend = ['first' => get_first_cycle($conn, $day),
                    'last' => get_last_cycle($conn, $day)];
-        $total += get_total_seconds($begend['first'], $begend['last'], 4);
+        $total += get_total_seconds($begend['first'], $begend['last'], count_machines($conn));
         $setup += get_all_time($conn, true, $begend['first'], $begend['last']);
         $cycle += get_all_time($conn, false, $begend['first'], $begend['last']);
     }
