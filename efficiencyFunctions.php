@@ -16,6 +16,19 @@ function count_machines($conn) {
     return $machine_count;
 }
 
+function collect_machines($conn) {
+    $machines = array();
+    $qry = "SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES";
+    $machine_list = $conn->query($qry);
+    if ($machine_list) {
+        while ($machine = $machine_list->fetch_assoc()) {
+            $machines[] = $machine['MACHNUM'];
+        }
+        $machine_list->free();
+    }
+    return $machines;
+}
+
 function concurrent_cycles($conn, $machnum, $starttime, $stoptime) {
     $res = 0;
     $setups = array();
@@ -60,8 +73,15 @@ function get_all_time($conn, $setup, $starttime, $stoptime) {
     return $res;
 }
 
-function get_machine_time($conn, $machnum, $setup, $starttime, $stoptime) {
+function get_all_time2($conn, $setup, $starttime, $stoptime) {
     $stp = $setup ? "True" : "False";
+    $beg = convert_date($starttime);
+}
+
+function get_machine_time($conn, $machnum, $setup, $start, $stop) {
+    $stp = $setup ? "True" : "False";
+    $starttime = convert_date($start);
+    $stoptime = convert_date($stop);
     $sql = "SELECT SUM(TIMESTAMPDIFF(SECOND, STARTTIME, STOPTIME)) AS DIFF FROM CUT_CYCLE_TIMES "
          . "WHERE MACHNUM='$machnum' AND "
          . "SETUP=$stp AND STARTTIME > '$starttime' AND STOPTIME < '$stoptime'";
@@ -94,6 +114,20 @@ function get_total_seconds($beg, $end, $machine_count) {
 function get_day_range($conn, $t) {
     return ['first' => get_first_cycle($conn, $t),
             'last' => get_last_cycle($conn, $t)];
+}
+
+function get_first_last_cycles($conn, $t) {
+    $wt = date('Y-m-d', $t);
+    $q = $conn->query("SELECT  "
+                      . "(SELECT STARTTIME FROM CUT_CYCLE_TIMES WHERE STARTTIME > '$wt 00:00:00' AND "
+                      . "STOPTIME < '$wt 23:59:59' ORDER BY ID ASC LIMIT 1) AS 'first', "
+                      . "(SELECT STOPTIME FROM CUT_CYCLE_TIMES WHERE STARTTIME > '$wt 00:00:00' AND "
+                      . "STOPTIME < '$wt 23:59:59' ORDER BY ID DESC LIMIT 1) AS 'last'");
+    $res = $q->fetch_assoc();
+    $out = ['first' => strtotime($res['first']),
+            'last'  => strtotime($res['last'])];
+    $q->free();
+    return $out;
 }
 
 function get_first_cycle($conn, $t) {
