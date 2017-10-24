@@ -1,12 +1,15 @@
-<?php
-date_default_timezone_set('America/Detroit');
-?>
 <!doctype html>
 <html lang="en">
     <head>
         <title>Amstore Machine Cycle Time</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-backstretch/2.0.4/jquery.backstretch.min.js"></script>
+        <script type="text/javascript" src="./bootstrap/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="./js/moment-with-locales.min.js"></script>
+        <script src="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/src/js/bootstrap-datetimepicker.js"></script>
+        <script type="text/javascript" src="./js/events.js"></script>
         <link href="./bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
         <link href="./bootstrap/css/bootstrap-theme.css" rel="stylesheet" media="screen">
         <link rel="icon" type="image/png" href="./favicon.png" />
@@ -27,32 +30,22 @@ date_default_timezone_set('America/Detroit');
              background-color: lightgrey;
              text-decoration: none;
          }
+         fieldset {
+             padding: 10px;
+         }
          .chart {
-             width: 800px;
+             width: 1090px;
              height: auto;
              margin: 0 auto;
-             padding: 20px;
+             padding: 5px;
              position: relative;
              opacity: 0.8;
          }
-         .comment {
-             font-style: italic;
-             text-align: right;
-             style: italic;
-             opacity: 0.5;
-         }
         </style>
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-backstretch/2.0.4/jquery.backstretch.min.js"></script>
-        <script type="text/javascript" src="./bootstrap/js/bootstrap.min.js"></script>
-        <script type="text/javascript" src="./js/moment-with-locales.min.js"></script>
-        <script src="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/src/js/bootstrap-datetimepicker.js"></script>
-        <script type="text/javascript" src="./js/events.js"></script>
-        <script type="text/javascript" src="./js/efficiency.js"></script>
+        <!-- <script type="text/javascript" src="./js/efficiency.js"> </script> -->
         <script type="text/javascript">
          $(document).ready(
-             function () {
-                 var machine_clicked = null;
+             function() {
                  $.backstretch("./img/stolen-bg.jpg");
                  $('#start').datetimepicker({
                      format: 'YYYY/MM/DD h:mm A'
@@ -60,8 +53,8 @@ date_default_timezone_set('America/Detroit');
                  $('#end').datetimepicker({
                      format: 'YYYY/MM/DD h:mm A'
                  });
-                 $('button#load').on('click', loadChart);
-                 makeChart();
+                 $('button#load').on('click', makeTable);
+                 makeTable();
              });
         </script>
     </head>
@@ -81,58 +74,19 @@ date_default_timezone_set('America/Detroit');
                 <!-- Collection of nav links and other content for toggling -->
                 <div id="navbarCollapse" class="collapse navbar-collapse">
                     <ul class="nav navbar-nav">
-                        <li id="LinkHome" class="inactive"><a href="/..">Home</a></li>
+                        <li id="LinkHome" class="inactive"><a href="/machine/">Home</a></li>
                     </ul>
 
-                    <ul class="nav navbar-nav">
-                        <li id="allMachines" class="active"><a href="#">All</a></li>
-                    </ul>
-                    <ul class="nav navbar-nav nav-right">
-                        <?php
-                        $config = parse_ini_file('/etc/cycles.conf');
-                        $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
-                        if ($mysqli->connect_errno) {
-                            echo "{$mysqli->connect_errno}: {$mysqli->connect_error}";
-                        }
-                        $result = $mysqli->query("SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES ORDER BY MACHNUM");
-                        while ($c = $result->fetch_assoc()) {
-                            $machnum = $c['MACHNUM'];
-                            echo "<li id='$machnum'><a href='#'>$machnum</a></li>" . "\n";
-                        }
-                        $result->free();
-                        $mysqli->close();
-                        ?>
-                        <script type='text/javascript'>
-                         $('#allMachines').on('click', function () {
-                             $('li').removeClass('active');
-                             $('#allMachines').addClass('active');
-                             $('#machineClicked').text('');
-                         });
-                         <?php
-                         $config = parse_ini_file('/etc/cycles.conf');
-                         $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
-                         if ($mysqli->connect_errno) {
-                             echo "{$mysqli->connect_errno}: {$mysqli->connect_error}";
-                         }
-                         $result = $mysqli->query("SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES");
-
-                         while ($b = $result->fetch_assoc()) {
-                             // echo "$('#$c').on('click', function () { $('li').removeClass('active');\n $('#$c').addClass('active');\n $('#machineClicked').text('$c');\n });\n";
-                             echo "$(\"#{$b['MACHNUM']}\").on(\"click\", function () { $(\"li\").removeClass(\"active\");\n"
-                           , "$(\"#{$b['MACHNUM']}\").addClass(\"active\");\n"
-                           , "$(\"#machineClicked\").text(\"{$b['MACHNUM']}\");\n"
-                           , "});\n";
-                         }
-                         $result->free();
-                         $mysqli->close();
-
-                         ?>                        </script>
-                    </ul>
+                    <!-- <ul class="nav navbar-nav">
+                         <li id="allMachines" class="active"><a href="#">All</a></li>
+                         </ul> -->
+                    <!-- <ul class="nav navbar-nav nav-right">
+                         </ul> -->
                 </div>
             </nav>
         </header>
         <div class="container">
-            <div class="col-xs-12 col-sm-12 col-md-6 col-md-6">
+            <div class="col-md-6">
                 <div class="panel panel-primary">
                     <div class="panel-heading">Amstore Machine Cycle Time</div>
                     <div class="panel-body">
@@ -312,74 +266,12 @@ date_default_timezone_set('America/Detroit');
                     </div>
                 </div>
             </div>
-            <div class="col-xs-12 col-sm-12 col-md-6 col-md-6">
+            <div class="col-xs-12 col-sm-12 col-md-122 col-md-12">
                 <div class="panel panel-default">
-                    <div class="panel-heading">Time Pies</div>
-                    <div class="panel-body"> <!-- style="height: 252px;"> -->
-                        <div id="piecontainer" class="col-xs-12 xol-sm12 col-md-6">
-                            <div id="pie"></div>
-                        </div>
-                        <div id="pie2container" class="col-xs-12 xol-sm12 col-md-6">
-                            <div id="pie2"></div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-            <!-- <div class="col-xs-12 col-sm-12 col-md-6 col-md-6"> -->
-            <!--     <div class="panel panel-default"> -->
-            <!--         <div class="panel-heading">Another Visualization</div> -->
-            <!--         <div class="panel-body"> -->
-            <!--             <div id="anothervis"> -->
-            <!--             </div> -->
-            <!--         </div> -->
-            <!--     </div> -->
-            <!-- </div> -->
-            <div class="col-xs-12 col-sm-12 col-md-12 col-md-12">
-                <div class="panel panel-default">
-                    <div class="panel-heading">Timeline</div>
-                    <div class="panel-body">
-                        <div id="chart">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="barcharts" class="col-xs-12 col-sm-12 col-md-12 col-md-12">
-                <div class="panel panel-default">
-                    <div class="panel-heading">All machine usage <span class="comment">(Last 14 days efficiency)</div>
+                    <div class="panel-heading">Log</div>
                     <div id="panel-body" style="padding: 20px;">
-                        <div id="chart1" class="chart">
+                        <div id="logtbl" class="chart">
                         </div>
-                    </div>
-                </div>
-                <!-- <div class="panel panel-default">
-                     <div class="panel-heading">Table</div>
-                     <div class="panel-body" id="tbls">
-                     <div id="tbl">
-                     </div>
-                     </div>
-                     </div> -->
-            </div>
-        </div>
-        <div class="navbar navbar-bottom">
-            <ul class="nav navbar-nav nav-right">
-                <li><a href="cycles.html" style="color:black;"><span class="glyphicon glyphicon-user"></span> About</a></li>
-                <li><a href="log.php" id="log" style="color:black;"><span class="nav-right glyphicon glyphicon-th-list"></span> <i>Log</i></a></li>
-
-            </ul>
-        </div>
-        <div id="modalAlert" class="modal fade">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                        <h4 class="modal-title">Alert</h4>
-                    </div>
-                    <div class="modal-body">
-                        <p id="alertText">End time should be after start time.</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
