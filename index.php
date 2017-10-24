@@ -27,6 +27,20 @@ date_default_timezone_set('America/Detroit');
              background-color: lightgrey;
              text-decoration: none;
          }
+         .chart {
+             width: 800px;
+             height: auto;
+             margin: 0 auto;
+             padding: 20px;
+             position: relative;
+             opacity: 0.8;
+         }
+         .comment {
+             font-style: italic;
+             text-align: right;
+             style: italic;
+             opacity: 0.5;
+         }
         </style>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-backstretch/2.0.4/jquery.backstretch.min.js"></script>
@@ -332,7 +346,7 @@ date_default_timezone_set('America/Detroit');
             </div>
             <div id="barcharts" class="col-xs-12 col-sm-12 col-md-12 col-md-12">
                 <div class="panel panel-default">
-                    <div class="panel-heading">All machine usage</div>
+                    <div class="panel-heading">All machine usage <span class="comment">(Last 14 days efficiency)</div>
                     <div id="panel-body" style="padding: 20px;">
                         <div id="chart1" class="chart">
                         </div>

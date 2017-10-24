@@ -421,7 +421,7 @@ $(document).ready(
 
         timeLine.options = {
             //width: 1280,
-            height: 128 * machines.length,
+            // height: 128 * machines.length,
             timeline: { showBarLabels: false },
             hAxis: {
                 viewWindowMode: 'pretty',
@@ -446,7 +446,6 @@ $(document).ready(
         // init charts
         $('#chart').fadeOut(0);
         $('a#log').on('click', makeTable);
-        $('button#load').on('click', loadChart);
 
         // init events
         var updateTableNotify = {

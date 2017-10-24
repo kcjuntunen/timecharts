@@ -64,7 +64,7 @@ function makeChart () {
                             var panel = document.createElement('div');
                             var heading = document.createElement('div');
                             heading.className = "panel-heading";
-                            heading.innerHTML = m + ' usage';
+                            heading.innerHTML = m + ' usage <span class="comment">(Last ' + (15 - 1) + ' days efficiency)</span>';
                             panel.className = "panel panel-default";
                             panel.appendChild(heading);
                             nd.id = 'm' + m;
