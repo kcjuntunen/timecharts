@@ -61,7 +61,7 @@ date_default_timezone_set('America/Detroit');
                      format: 'YYYY/MM/DD h:mm A'
                  });
                  $('button#load').on('click', loadChart);
-                 $('button#load').on('click', makeChart);
+                 makeChart();
              });
         </script>
     </head>
