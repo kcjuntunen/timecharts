@@ -4,14 +4,15 @@ function makeChart () {
     google.charts.setOnLoadCallback(drawChart);
 
     function arrange_data(indata) {
-        res= [[{id: 'Date', label: 'Date', type: 'date'}, {id: '% Usage', label: '% usage', type: 'number'}]];
+        res= [[{id: 'Date', label: 'Date', type: 'date'}, {id: 'Usage', label: 'Usage', type: 'number'}]];
         if (!Array.isArray(indata) || indata.length < 1) {
             return res;
         }
         for (i = 0, j = indata.length; i < j; i++) {
-            res.push([new Date(indata[i][0]), indata[i][1]]);
+            if (indata[i][1] != 0) {
+                res.push([new Date(indata[i][0]), indata[i][1]]);
+            }
         }
-        console.log(res);
         return res;
     };
 
@@ -19,19 +20,25 @@ function makeChart () {
         function draw(indata, element) {
             var d_ = arrange_data(indata);
             var data = new google.visualization.arrayToDataTable(d_);
-            data.addColumn('string', 'Date');
-            data.addColumn('number', '% Usage');
-            data.addColumn({type: 'string', role: 'tooltip', p: {html: true}});
+            var formatter = new google.visualization.NumberFormat({pattern: '#,###.#%'});
+            formatter.format(data, 1);
             var v_ = new google.visualization.DataView(data);
-            v_.setColumns([0, 1, {type: 'string', role: "tooltip", p: {html: true}}]);
             var options = {
-                width: 800,
                 height: 300,
                 seriesType: 'bars',
+                series: {
+                    1: {
+                        type: 'line'
+                    }
+                },
                 chart: {
                     title: element.id.replace('m', '').replace('chart1', 'All machine') + ' usage',
-                    subtitle: 'Last ' + (d_.length - 1) + ' Days Efficiency'
+                    subtitle: 'Last ' + (d_.length - 1) + ' days'
                 },
+                trendlines: { 0: {
+                    type: 'exponential',
+                    lineWidth: 4
+                }},
                 tooltip: {isHtml: true},
                 legend: { position: 'none'},
                 hAxis: {
@@ -47,6 +54,7 @@ function makeChart () {
                           maxValue: 1,
                           format: '#%' }
             };
+            $(element).fadeIn(5000);
             var chart = new google.visualization.ComboChart(element);
             chart.draw(v_, options);
         };
@@ -64,12 +72,13 @@ function makeChart () {
                             var panel = document.createElement('div');
                             var heading = document.createElement('div');
                             heading.className = "panel-heading";
-                            heading.innerHTML = m + ' usage <span class="comment">(Last ' + (15 - 1) + ' days efficiency)</span>';
+                            heading.innerHTML = m + ' usage <span class="comment">(Last ' + (15 - 1) + ' days)</span>';
                             panel.className = "panel panel-default";
                             panel.appendChild(heading);
                             nd.id = 'm' + m;
                             nd.className = 'chart';
                             panel.appendChild(nd);
+                            $(nd).fadeOut(0);
                             d.appendChild(panel);
                             draw(JSON.parse(indata.responseText)['m' + m], document.getElementById('m' + m));
                         })});
