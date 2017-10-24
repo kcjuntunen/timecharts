@@ -7,6 +7,13 @@ date_default_timezone_set('America/Detroit');
         <title>Amstore Machine Cycle Time</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-backstretch/2.0.4/jquery.backstretch.min.js"></script>
+        <script type="text/javascript" src="./bootstrap/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="./js/moment-with-locales.min.js"></script>
+        <script src="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/src/js/bootstrap-datetimepicker.js"></script>
+        <script type="text/javascript" src="./js/events.js"></script>
+        <script type="text/javascript" src="./js/efficiency.js"></script>
         <link href="./bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
         <link href="./bootstrap/css/bootstrap-theme.css" rel="stylesheet" media="screen">
         <link rel="icon" type="image/png" href="./favicon.png" />
@@ -27,6 +34,12 @@ date_default_timezone_set('America/Detroit');
              background-color: lightgrey;
              text-decoration: none;
          }
+         fieldset {
+             padding: 10px;
+         }
+         chart {
+             opacity: 0.8;
+         }
          .chart {
              width: 800px;
              height: auto;
@@ -42,13 +55,6 @@ date_default_timezone_set('America/Detroit');
              opacity: 0.5;
          }
         </style>
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-backstretch/2.0.4/jquery.backstretch.min.js"></script>
-        <script type="text/javascript" src="./bootstrap/js/bootstrap.min.js"></script>
-        <script type="text/javascript" src="./js/moment-with-locales.min.js"></script>
-        <script src="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/src/js/bootstrap-datetimepicker.js"></script>
-        <script type="text/javascript" src="./js/events.js"></script>
-        <script type="text/javascript" src="./js/efficiency.js"></script>
         <script type="text/javascript">
          $(document).ready(
              function () {
