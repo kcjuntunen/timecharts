@@ -24,7 +24,7 @@
              background-color: lightgrey;
              text-decoration: none;
          }
-         #chart1 {
+         .chart {
              width: 800px;
              height: auto;
              margin: 0 auto;
@@ -62,65 +62,25 @@
                     <a href="#" class="navbar-brand">Machines</a>
                 </div>
                 <!-- Collection of nav links and other content for toggling -->
-                <!-- <div id="navbarCollapse" class="collapse navbar-collapse">
-                     <ul class="nav navbar-nav">
-                     <li id="LinkHome" class="inactive"><a href="/..">Home</a></li>
-                     </ul>
+                <div id="navbarCollapse" class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li id="LinkHome" class="inactive"><a href="/..">Home</a></li>
+                    </ul>
 
-                     <ul class="nav navbar-nav">
-                     <li id="allMachines" class="active"><a href="#">All</a></li>
-                     </ul>
-                     <ul class="nav navbar-nav nav-right">
-                     // <?php
-                        // $config = parse_ini_file('/etc/cycles.conf');
-                        // $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
-                        // if ($mysqli->connect_errno) {
-                        //     echo "{$mysqli->connect_errno}: {$mysqli->connect_error}";
-                        // }
-                        // $result = $mysqli->query("SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES ORDER BY MACHNUM");
-                        // while ($c = $result->fetch_assoc()) {
-                        //     $machnum = $c['MACHNUM'];
-                        //     echo "<li id='$machnum'><a href='#'>$machnum</a></li>" . "\n";
-                        // }
-                        // $result->free();
-                        // $mysqli->close();
-                        // ?>
-                     // <script type='text/javascript'>
-                     //  $('#allMachines').on('click', function () {
-                     //      $('li').removeClass('active');
-                     //      $('#allMachines').addClass('active');
-                     //      $('#machineClicked').text('');
-                     //  });
-                     //  <?php
-                         //  $config = parse_ini_file('/etc/cycles.conf');
-                         //  $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
-                         //  if ($mysqli->connect_errno) {
-                         //      echo "{$mysqli->connect_errno}: {$mysqli->connect_error}";
-                         //  }
-                         //  $result = $mysqli->query("SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES");
-
-                         //  while ($b = $result->fetch_assoc()) {
-                         //      // echo "$('#$c').on('click', function () { $('li').removeClass('active');\n $('#$c').addClass('active');\n $('#machineClicked').text('$c');\n });\n";
-                         //      echo "$(\"#{$b['MACHNUM']}\").on(\"click\", function () { $(\"li\").removeClass(\"active\");\n"
-                         //    , "$(\"#{$b['MACHNUM']}\").addClass(\"active\");\n"
-                         //    , "$(\"#machineClicked\").text(\"{$b['MACHNUM']}\");\n"
-                         //    , "});\n";
-                         //  }
-                         //  $result->free();
-                         //  $mysqli->close();
-
-                         //  ?>
-                     </script>
-                     </ul>
-                     </div> -->
+                    <!-- <ul class="nav navbar-nav">
+                         <li id="allMachines" class="active"><a href="#">All</a></li>
+                         </ul> -->
+                    <!-- <ul class="nav navbar-nav nav-right">
+                         </ul> -->
+                </div>
             </nav>
         </header>
         <div class="container">
-            <div class="col-xs-12 col-sm-12 col-md-122 col-md-12">
+            <div id="barcharts" class="col-xs-12 col-sm-12 col-md-122 col-md-12">
                 <div class="panel panel-default">
-                    <!-- <div class="panel-heading">Efficiency</div> -->
+                    <div class="panel-heading">All machine usage</div>
                     <div id="panel-body" style="padding: 20px;">
-                        <div id="chart1">
+                        <div id="chart1" class="chart">
                         </div>
                     </div>
                 </div>
