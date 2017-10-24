@@ -54,7 +54,7 @@ var loadChart = function() {
     machine_clicked = document.getElementById("machineClicked").textContent;
     timeLine.options = {
         //width: 1280,
-        height: 128 * machines.length,
+        //height: 128 * machines.length,
         timeline: { showBarLabels: false },
         hAxis: {
             viewWindowMode: 'pretty',
@@ -110,7 +110,7 @@ var GetDatestring = function() {
     machine_clicked = document.getElementById("machineClicked").textContent;
     timeLine.options = {
         //width: 1280,
-        height: 128 * machines.length,
+        //height: 128 * machines.length,
         timeline: { showBarLabels: false },
         hAxis: {
             viewWindowMode: 'pretty',
@@ -133,7 +133,7 @@ var GetNowDatestring = function() {
 
     timeLine.options = {
         //width: 1280,
-        height: 128 * machines.length,
+        //height: 128 * machines.length,
         timeline: { showBarLabels: false },
         hAxis: {
             viewWindowMode: 'pretty',
@@ -286,7 +286,7 @@ tables.Update = function () {
         tbl.draw(data,
                  { showRowNumber: true,
                    width: 1280,
-                   height: 256
+                   //height: 256
                  }
                 );
         fmt_data = [];
@@ -377,7 +377,7 @@ var makeTable = function () {
         var tbl = new google.visualization.Table(document.getElementById('logtbl'));
         tbl.draw(fmt_datatable,
                  {
-                     height: '256px',
+                     //height: '256px',
                      showRowNumber: false
                  }
                 );
@@ -393,6 +393,9 @@ var Render = function(response) {
     timeLine.Render(response);
     // tables.Render();
     pieChart.Render();
+    if (window.innerWidth > 991) {
+        $("#piepanel").height($('#controls').height());
+    }
 };
 
 var drawMultSeries = function (strt, nd, mach) {
@@ -446,13 +449,16 @@ $(document).ready(
 
         // init charts
         $('#chart').fadeOut(0);
-        // $('a#log').on('click', makeTable);
+        $('a#log').on('click', makeTable);
 
         // init events
         var updateTableNotify = {
             notify: function () {
-                tables.Update(lastResponse);
+                // tables.Update(lastResponse);
                 pieChart.Render();
+                if (window.innerWidth > 991) {
+                    $("#piepanel").height($('#controls').height());
+                }
             }
         };
         //lastResponse.register('value', updateTableNotify);
