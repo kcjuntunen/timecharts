@@ -185,6 +185,7 @@ timeLine.Render = function(response) {
 
     chart.fadeIn(2000);
     this.Chart = new google.visualization.Timeline(document.getElementById('chart'));
+    this.options['height'] = data.getNumberOfColumns() * 60;
     this.Chart.draw(this.data, this.options);
 
     var t = setInterval(timeLine.Update, 10000);

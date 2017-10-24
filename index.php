@@ -139,7 +139,7 @@ date_default_timezone_set('America/Detroit');
         </header>
         <div class="container">
             <div class="col-xs-12 col-sm-12 col-md-6 col-md-6">
-                <div class="panel panel-primary">
+                <div id="controls" class="panel panel-primary">
                     <div class="panel-heading">Amstore Machine Cycle Time</div>
                     <div class="panel-body">
                         <script type="text/javascript" >
@@ -319,7 +319,7 @@ date_default_timezone_set('America/Detroit');
                 </div>
             </div>
             <div class="col-xs-12 col-sm-12 col-md-6 col-md-6">
-                <div class="panel panel-default">
+                <div id="piepanel" class="panel panel-default">
                     <div class="panel-heading">Time Pies</div>
                     <div class="panel-body"> <!-- style="height: 252px;"> -->
                         <div id="piecontainer" class="col-xs-12 xol-sm12 col-md-6">
@@ -352,7 +352,7 @@ date_default_timezone_set('America/Detroit');
             </div>
             <div id="barcharts" class="col-xs-12 col-sm-12 col-md-12 col-md-12">
                 <div class="panel panel-default">
-                    <div class="panel-heading">All machine usage <span class="comment">(Last 14 days efficiency)</div>
+                    <div class="panel-heading">All machine usage <span class="comment">(Last 14 days)</div>
                     <div id="panel-body" style="padding: 20px;">
                         <div id="chart1" class="chart">
                         </div>
