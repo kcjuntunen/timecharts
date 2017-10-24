@@ -8,7 +8,7 @@ $all = array();
 $machines = collect_machines($mysqli);
 
 if (!isset($_REQUEST["machine"])) {
-    for ($i = 1; $i < 16; $i++) {
+    for ($i = 1; $i < 15; $i++) {
         $r = get_first_last_cycles($mysqli, strtotime("now -$i days"));
         $start = $r['first'];
         $end = $r['last'];
@@ -31,7 +31,7 @@ if (!isset($_REQUEST["machine"])) {
                     'all' => array_reverse($all),
     );
 } else {
-    for ($i = 1; $i < 16; $i++) {
+    for ($i = 1; $i < 15; $i++) {
         $r = get_first_last_cycles($mysqli, strtotime("now -$i days"));
         $start = $r['first'];
         $end = $r['last'];
