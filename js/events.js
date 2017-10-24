@@ -445,7 +445,7 @@ $(document).ready(
 
         // init charts
         $('#chart').fadeOut(0);
-        $('a#log').on('click', makeTable);
+        // $('a#log').on('click', makeTable);
 
         // init events
         var updateTableNotify = {
