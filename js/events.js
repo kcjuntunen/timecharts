@@ -390,7 +390,7 @@ var makeTable = function () {
 
 var Render = function(response) {
     timeLine.Render(response);
-    tables.Render();
+    // tables.Render();
     pieChart.Render();
 };
 
@@ -455,6 +455,6 @@ $(document).ready(
                 pieChart.Render();
             }
         };
-        lastResponse.register('value', updateTableNotify);
+        //lastResponse.register('value', updateTableNotify);
     }
 );

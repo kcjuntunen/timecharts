@@ -34,6 +34,7 @@ date_default_timezone_set('America/Detroit');
         <script type="text/javascript" src="./js/moment-with-locales.min.js"></script>
         <script src="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/src/js/bootstrap-datetimepicker.js"></script>
         <script type="text/javascript" src="./js/events.js"></script>
+        <script type="text/javascript" src="./js/efficiency.js"></script>
         <script type="text/javascript">
          $(document).ready(
              function () {
@@ -45,6 +46,8 @@ date_default_timezone_set('America/Detroit');
                  $('#end').datetimepicker({
                      format: 'YYYY/MM/DD h:mm A'
                  });
+                 $('button#load').on('click', loadChart);
+                 $('button#load').on('click', makeChart);
              });
         </script>
     </head>
@@ -327,14 +330,21 @@ date_default_timezone_set('America/Detroit');
                     </div>
                 </div>
             </div>
-            <div class="col-xs-12 col-sm-12 col-md-12 col-md-12">
+            <div id="barcharts" class="col-xs-12 col-sm-12 col-md-12 col-md-12">
                 <div class="panel panel-default">
-                    <div class="panel-heading">Table</div>
-                    <div class="panel-body" id="tbls">
-                        <div id="tbl">
+                    <div class="panel-heading">All machine usage</div>
+                    <div id="panel-body" style="padding: 20px;">
+                        <div id="chart1" class="chart">
                         </div>
                     </div>
                 </div>
+                <!-- <div class="panel panel-default">
+                     <div class="panel-heading">Table</div>
+                     <div class="panel-body" id="tbls">
+                     <div id="tbl">
+                     </div>
+                     </div>
+                     </div> -->
             </div>
         </div>
         <div class="navbar navbar-bottom">
