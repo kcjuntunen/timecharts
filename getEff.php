@@ -6,9 +6,10 @@ $config = parse_ini_file('/etc/cycles.conf');
 $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
 $all = array();
 $machines = collect_machines($mysqli);
+$noofdays = 15;
 
 if (!isset($_REQUEST["machine"])) {
-    for ($i = 1; $i < 15; $i++) {
+    for ($i = 1; $i < $noofdays; $i++) {
         $r = get_first_last_cycles($mysqli, strtotime("now -$i days"));
         $start = $r['first'];
         $end = $r['last'];
@@ -31,7 +32,7 @@ if (!isset($_REQUEST["machine"])) {
                     'all' => array_reverse($all),
     );
 } else {
-    for ($i = 1; $i < 15; $i++) {
+    for ($i = 1; $i < $noofdays; $i++) {
         $r = get_first_last_cycles($mysqli, strtotime("now -$i days"));
         $start = $r['first'];
         $end = $r['last'];
