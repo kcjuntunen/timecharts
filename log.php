@@ -41,6 +41,12 @@
              position: relative;
              opacity: 0.8;
          }
+         .google-visualization-table-table td {
+             font-size: 0.8em;
+             border: solid #eee;
+             border-width: 0 1px 1px 0;
+             padding: 2px .35em;
+        }
         </style>
         <!-- <script type="text/javascript" src="./js/efficiency.js"> </script> -->
         <script type="text/javascript">
