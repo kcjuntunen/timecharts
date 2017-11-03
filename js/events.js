@@ -96,10 +96,11 @@ var arrange_data = function(indata) {
         if (machines.indexOf(indata[i][1]) < 0) {
             machines.push(indata[i][1]);
         }
-
-        res.push([indata[i][1], indata[i][2],
-                  new Date(indata[i][3]),
-                  new Date(indata[i][4])]);
+        if (new Date(indata[i][3]) > new Date(starttime)) {
+            res.push([indata[i][1], indata[i][2],
+                      new Date(indata[i][3]),
+                      new Date(indata[i][4])]);
+        }
     }
     return res;
 };
