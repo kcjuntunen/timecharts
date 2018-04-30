@@ -222,7 +222,7 @@ timeLine.Update = function() {
 };
 
 
-tables.innerArray = [machines.length];
+tables.innerArray = [];
 
 tables.createTable = function () {
 		var _tmp = new google.visualization.DataTable();
@@ -237,7 +237,18 @@ tables.createTable = function () {
 
 tables.Render = function() {
 		for (var i = 0, len = machines.length; i < len; i++) {
-				tables.innerArray.push({"dataTable":  this.createTable()});
+				$("#tbls").append("<button type=\"button\" class=\"btn btn-info\" " +
+													"data-toggle=\"collapse\" data-target=\"#t" + machines[i] +
+													"\"></ br>"	 + machines[i] +
+													"</button>" +
+													"<div id=\"t" + machines[i] +
+													"\" class=\"collapse\"></div>");
+				tables.innerArray.push({
+						"table":
+						new google.visualization.Table(document.getElementById("t" + machines[i])),
+						"dataTable":
+						this.createTable()
+				});
 		}
 		this.Update();
 };
@@ -247,20 +258,7 @@ tables.Update = function () {
 		var raw_data = lastResponse.value.responseJSON;
 		var fmt_data = [];
 		for(var i = 0; i < machines.length; i++) {
-				var data = this.createTable();
-				if (document.getElementById("t" + machines[i]) === null) {
-						$("#tbls").append("<button type=\"button\" class=\"btn btn-info\" " +
-															"data-toggle=\"collapse\" data-target=\"#t" + machines[i] +
-															"\"></ br>"	 + machines[i] +
-															"</button>" +
-															"<div id=\"t" + machines[i] +
-															"\" class=\"collapse\"></div>");
-						var tb = new google.visualization.Table(document.getElementById("t" + machines[i]));
-						this.innerArray.push({table: tb, dataTable: data});
-				} else {
-						if (this.innerArray[i] != 0)
-								data = this.innerArray[i].dataTable;
-				}
+				var data = this.innerArray[i].dataTable;
 				for(var j = 0, jn = raw_data.length; j < jn; j++) {
 						if (raw_data[j][1] === machines[i]) {
 								var sDate = new Date(raw_data[j][3].toString());
@@ -281,18 +279,21 @@ tables.Update = function () {
 						}
 				}
 				data.addRows(fmt_data);
-				var tbl = new google.visualization.Table(document.getElementById("t" + machines[i]));
-				fmt = new google.visualization.DateFormat(
-						{ pattern: 'MMM d, yyyy h:mm:ss aa' });
-				fmt.format(data, 2);
-				fmt.format(data, 3);
-				tbl.draw(data,
-								 { showRowNumber: true,
-									 width: 1280,
-									 //height: 256
-								 }
-								);
-				fmt_data = [];
+				if (i <= this.innerArray.length && this.innerArray[i].table != undefined) {
+						var tbl = this.innerArray[i].table;
+					  data = this.innerArray[i].dataTable;
+						fmt = new google.visualization.DateFormat(
+								{ pattern: 'MMM d, yyyy h:mm:ss aa' });
+						fmt.format(data, 2);
+						fmt.format(data, 3);
+						tbl.draw(data,
+										 { showRowNumber: true,
+											 width: 1280,
+											 //height: 256
+										 }
+										);
+						fmt_data = [];
+				}
 		}
 };
 
@@ -458,7 +459,7 @@ $(document).ready(
 				// init events
 				var updateTableNotify = {
 						notify: function () {
-								// tables.Update(lastResponse);
+								tables.Update();
 								pieChart.Render();
 								if (window.innerWidth > 991) {
 										$("#piepanel").height($('#controls').height());
