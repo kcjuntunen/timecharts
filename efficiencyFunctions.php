@@ -78,6 +78,15 @@ function get_all_time2($conn, $setup, $starttime, $stoptime) {
     $beg = convert_date($starttime);
 }
 
+function get_all_time3($conn, $dt) {
+    $sql = "SELECT SUM(AVG_DELTA * DAY_LENGTH) AS TOTAL FROM DAYREPORT "
+         . "WHERE DT = '$dt';";
+    $data = $conn->query($sql);
+    $res = $data->fetch_assoc()['TOTAL'];
+    $data->free();
+    return $res;
+}
+
 function get_machine_time($conn, $machnum, $setup, $start, $stop) {
     $stp = $setup ? "True" : "False";
     $starttime = convert_date($start);
