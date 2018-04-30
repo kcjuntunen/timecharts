@@ -222,7 +222,7 @@ timeLine.Update = function() {
 };
 
 
-tables.innerArray = [];
+tables.innerArray = [machines.length];
 
 tables.createTable = function () {
 		var _tmp = new google.visualization.DataTable();
@@ -236,8 +236,8 @@ tables.createTable = function () {
 };
 
 tables.Render = function() {
-		for (var i = 0, len = this.innerArray.length; i < len; i++) {
-				tables.innerArray[i].dataTable = this.createTable();
+		for (var i = 0, len = machines.length; i < len; i++) {
+				tables.innerArray.push({"dataTable":  this.createTable()});
 		}
 		this.Update();
 };
@@ -248,17 +248,18 @@ tables.Update = function () {
 		var fmt_data = [];
 		for(var i = 0; i < machines.length; i++) {
 				var data = this.createTable();
-				if (document.getElementById("m" + machines[i]) === null) {
+				if (document.getElementById("t" + machines[i]) === null) {
 						$("#tbls").append("<button type=\"button\" class=\"btn btn-info\" " +
-															"data-toggle=\"collapse\" data-target=\"#m" + machines[i] +
+															"data-toggle=\"collapse\" data-target=\"#t" + machines[i] +
 															"\"></ br>"	 + machines[i] +
 															"</button>" +
-															"<div id=\"m" + machines[i] +
+															"<div id=\"t" + machines[i] +
 															"\" class=\"collapse\"></div>");
-						var tb = new google.visualization.Table(document.getElementById("m" + machines[i]));
+						var tb = new google.visualization.Table(document.getElementById("t" + machines[i]));
 						this.innerArray.push({table: tb, dataTable: data});
 				} else {
-						data = this.innerArray[i].dataTable;
+						if (this.innerArray[i] != 0)
+								data = this.innerArray[i].dataTable;
 				}
 				for(var j = 0, jn = raw_data.length; j < jn; j++) {
 						if (raw_data[j][1] === machines[i]) {
@@ -280,7 +281,7 @@ tables.Update = function () {
 						}
 				}
 				data.addRows(fmt_data);
-				var tbl = this.innerArray[i].table;
+				var tbl = new google.visualization.Table(document.getElementById("t" + machines[i]));
 				fmt = new google.visualization.DateFormat(
 						{ pattern: 'MMM d, yyyy h:mm:ss aa' });
 				fmt.format(data, 2);
