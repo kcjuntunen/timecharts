@@ -101,15 +101,18 @@ date_default_timezone_set('America/Detroit');
 												<li id="allMachines" class="active"><a href="#">All</a></li>
 										</ul>
 										<ul class="nav navbar-nav nav-right">
+												<script type="text/javascript">var machines = [];</script>
 												<?php
 												$config = parse_ini_file('/etc/cycles.conf');
 												$mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
 												if ($mysqli->connect_errno) {
 														echo "{$mysqli->connect_errno}: {$mysqli->connect_error}";
 												}
-												$result = $mysqli->query("SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES ORDER BY MACHNUM");
+												/* $result = $mysqli->query("SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES ORDER BY MACHNUM"); */
+												$result = $mysqli->query("SELECT DISTINCT MACHINE AS MACHNUM FROM CUT_CYCLE_EVENTS ORDER BY MACHINE");
 												while ($c = $result->fetch_assoc()) {
 														$machnum = $c['MACHNUM'];
+														$machines[] = $machnum;
 														echo "<li id='$machnum'><a href='#'>$machnum</a></li>" . "\n";
 												}
 												$result->free();
@@ -122,24 +125,15 @@ date_default_timezone_set('America/Detroit');
 														 $('#machineClicked').text('');
 												 });
 												 <?php
-												 $config = parse_ini_file('/etc/cycles.conf');
-												 $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
-												 if ($mysqli->connect_errno) {
-														 echo "{$mysqli->connect_errno}: {$mysqli->connect_error}";
+												 foreach ($machines as $machine) {
+														 echo "$(\"#{$machine}\").on(\"click\", function () { $(\"li\").removeClass(\"active\");\n",
+														 "$(\"#{$machine}\").addClass(\"active\");\n",
+														 "$(\"#machineClicked\").text(\"{$machine}\");\n});\n";
+														 echo "machines.push('$machine');\n";
 												 }
-												 $result = $mysqli->query("SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES");
-
-												 while ($b = $result->fetch_assoc()) {
-														 // echo "$('#$c').on('click', function () { $('li').removeClass('active');\n $('#$c').addClass('active');\n $('#machineClicked').text('$c');\n });\n";
-														 echo "$(\"#{$b['MACHNUM']}\").on(\"click\", function () { $(\"li\").removeClass(\"active\");\n"
-													 , "$(\"#{$b['MACHNUM']}\").addClass(\"active\");\n"
-													 , "$(\"#machineClicked\").text(\"{$b['MACHNUM']}\");\n"
-													 , "});\n";
-												 }
-												 $result->free();
-												 $mysqli->close();
-
-												 ?>												 </script>
+												 ?>
+												</script>
+												<script type="text/javascript">checkMachines();</script>
 										</ul>
 								</div>
 						</nav>
