@@ -80,7 +80,9 @@ function makeChart () {
 							panel.appendChild(nd);
 							$(nd).fadeOut(0);
 							d.appendChild(panel);
-							draw(JSON.parse(indata.responseText)['m' + m], document.getElementById('m' + m));
+							jn = JSON.parse(indata.responseText);
+							if (jn['m' + m] != undefined)
+								draw(jn['m' + m], document.getElementById('m' + m));
 						})});
 			});
 		};
