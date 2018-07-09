@@ -23,7 +23,6 @@ if (isset($_REQUEST['machine'])) {
 } else {
     $res = array();
     $qres = $mysqli->query("SELECT * FROM MACHINE_IPS");
-    $machines = array_keys($ips);
     while ($item = $qres->fetch_assoc()) {
         $res[$item['MACHNUM']] = str_replace("\n", "", ping($item['IP']));
     }
