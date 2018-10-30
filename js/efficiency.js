@@ -60,6 +60,9 @@ function makeChart () {
 		};
 
 		function allMachines(indata) {
+			if (indata.responseJSON == undefined) {
+					return;
+			}
 			draw(indata.responseJSON.all, document.getElementById('chart1'));
 			machines = indata.responseJSON.machines;
 			machines.forEach(function(m) {
@@ -94,7 +97,7 @@ function makeChart () {
 
 		$.ajax({url: 'getEff.php',
 				dataType: "json",
-				timeout: 5000,
+				timeout: 10000,
 				complete: allMachines});
 
 	};
