@@ -20,8 +20,9 @@ if (!isset($_REQUEST["machine"])) {
 			$end = strtotime("today 18:30 -$i day");
 		}
 		$date = date('Y-m-d', $start);
-		$seconds = get_total_seconds($start, $end, count($machines));
-		$all[] = array(date('Y-m-d', $start), get_all_time($mysqli, false, $start, $end) / $seconds);
+		// $seconds = get_total_seconds($start, $end, count($machines));
+		// $all[] = array(date('Y-m-d', $start), get_all_time($mysqli, false, $start, $end) / $seconds);
+        $all[] = array(date('Y-m-d', $start), get_efficiency_time($mysqli, $start));
 		$ranges[] = array('date' => $date,
 						  'start' => $start,
 						  'end' => $end);
@@ -46,10 +47,13 @@ if (!isset($_REQUEST["machine"])) {
 		// $ranges[] = array('date' => $date,
 		//					 'start' => $start,
 		//					 'end' => $end);
-		$all[] = array(date('Y-m-d', $start), get_machine_time($mysqli, $_REQUEST['machine'],
-															   false,
-															   $start,
-															   $end) / get_total_seconds($start, $end, 1));
+		// $all[] = array(date('Y-m-d', $start), get_machine_time($mysqli, $_REQUEST['machine'],
+		// 													   false,
+		// 													   $start,
+		// 													   $end) / get_total_seconds($start, $end, 1));
+        $machnum = $_REQUEST['machine'];
+		$all[] = array(date('Y-m-d', $start), get_machine_time2($mysqli, date('Y-m-d', $start),
+                                                                $machnum));
 	}
 
 	$result = array( 'm' . $_REQUEST['machine'] => $all );

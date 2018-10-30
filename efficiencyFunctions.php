@@ -79,8 +79,17 @@ function get_all_time2($conn, $setup, $starttime, $stoptime) {
 }
 
 function get_all_time3($conn, $dt) {
-    $sql = "SELECT SUM(AVG_DELTA * DAY_LENGTH) AS TOTAL FROM DAYREPORT "
-         . "WHERE DT = '$dt';";
+    $sql = "SELECT SUM(TOTAL_CYCLE_TIME) AS TOTAL FROM DAYREPORT "
+         . "WHERE DT = '" . date('Y-m-d', $dt) . "';";
+    $data = $conn->query($sql);
+    $res = $data->fetch_assoc()['TOTAL'];
+    $data->free();
+    return $res;
+}
+
+function get_efficiency_time($conn, $dt) {
+    $sql = "SELECT AVG(PERCENT_USAGE) AS TOTAL FROM DAYREPORT "
+         . "WHERE DT = '" . date('Y-m-d', $dt) . "';";
     $data = $conn->query($sql);
     $res = $data->fetch_assoc()['TOTAL'];
     $data->free();
@@ -106,6 +115,21 @@ function get_machine_time($conn, $machnum, $setup, $start, $stop) {
     return $res;
 }
 
+function get_machine_time2($conn, $dt, $machnum) {
+    $sql = "SELECT PERCENT_USAGE AS TOTAL FROM DAYREPORT "
+         . "WHERE DT = '$dt' AND MACHNUM = '$machnum'";
+    $data = $conn->query($sql);
+    $res = 0;
+    if (!$data) {
+        return 0;
+    }
+    while ($a = $data->fetch_assoc()) {
+        $res += $a['TOTAL'] ;
+    }
+    $data->free();
+    return $res;
+}
+
 function convert_date($time) {
     return date('Y-m-d\TH:i:s', $time);
 }
@@ -118,6 +142,17 @@ function get_total_seconds($beg, $end, $machine_count) {
     } else {
         return $total_seconds;
     }
+}
+
+function get_total_seconds2($conn, $dt) {
+    $sql = "SELECT SUM(DAY_LENGTH) AS TOTAL FROM DAYREPORT WHERE DT='" . date('Y-m-d', $dt). "';";
+    $data = $conn->query($sql);
+    $res = 0;
+    while ($a = $data->fetch_assoc()) {
+        $res = $a['TOTAL'];
+    }
+    $data->free();
+    return $res;
 }
 
 function get_day_range($conn, $t) {

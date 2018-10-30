@@ -1,8 +1,4 @@
 <?php
-$config = parse_ini_file('/etc/cycles.conf');
-$mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
-$tz = 'UTC';
-date_default_timezone_set($tz);
 include('efficiencyFunctions.php');
 
 function get_breaks($beg, $end) {
@@ -63,6 +59,9 @@ function get_selected_range($beg, $end, $conn) {
 	$total_seconds = get_total_seconds($beg, $end, $machine_count);
 	$total_setup_time = get_all_time($conn, true, $beg, $end);
 	$total_cycle_time = get_all_time($conn, false, $beg, $end);
+    // $total_seconds = get_total_seconds2($conn, $beg);
+    // $total_setup_time = 0;
+    // $total_cycle_time = get_all_time3($conn, $end);
 	return array( "total" => $total_seconds,
 				  "setup" => $total_setup_time,
 				  "cycle" => $total_cycle_time );
@@ -81,9 +80,12 @@ function get_last_week($conn) {
 
 	foreach($days as $day) {
 		$begend = get_first_last_cycles($conn, $day);
-		$total += get_total_seconds($begend['first'], $begend['last'], $mcount);
-		$setup += get_all_time($conn, true, $begend['first'], $begend['last']);
-		$cycle += get_all_time($conn, false, $begend['first'], $begend['last']);
+		// $total += get_total_seconds($begend['first'], $begend['last'], $mcount);
+		// $setup += get_all_time($conn, true, $begend['first'], $begend['last']);
+		// $cycle += get_all_time($conn, false, $begend['first'], $begend['last']);
+        $total += get_total_seconds2($conn, $begend['first']);
+        $setup += 0;
+        $cycle += get_all_time3($conn, $day);
 	}
 	return array( 'total' => $total,
 				  'setup' => $setup,
@@ -91,6 +93,10 @@ function get_last_week($conn) {
 }
 
 if (isset($_REQUEST['start']) && isset($_REQUEST['end'])) {
+    $config = parse_ini_file('/etc/cycles.conf');
+    $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
+    $tz = 'UTC';
+    date_default_timezone_set($tz);
 	$beg = strtotime($_REQUEST['start']);
 	$end = strtotime($_REQUEST['end']);
 	echo json_encode(
