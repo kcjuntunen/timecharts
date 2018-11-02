@@ -261,7 +261,7 @@ tables.AddItem = function(machine) {
 						new google.visualization.Table(document.getElementById("t" + machine)),
 						"dataTable": this.createTable()
 				};
-}
+};
 
 checkMachine = function(machine) {
 		$.ajax(
@@ -278,7 +278,7 @@ checkMachine = function(machine) {
 						}
 				}
 		);
-}
+};
 
 checkMachines = function() {
 		$.ajax(
@@ -297,7 +297,7 @@ checkMachines = function() {
 						}
 				}
 		);
-}
+};
 
 tables.Update = function () {
 		console.log('table update triggered');
