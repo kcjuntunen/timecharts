@@ -36,7 +36,7 @@ function makeChart () {
 					subtitle: 'Last ' + (d_.length - 1) + ' days'
 				},
 				trendlines: { 0: {
-					type: 'exponential',
+					type: 'linear',
 					lineWidth: 4
 				}},
 				tooltip: {isHtml: true},
