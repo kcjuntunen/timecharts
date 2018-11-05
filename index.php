@@ -372,6 +372,7 @@ date_default_timezone_set('America/Detroit');
 				</div>
 				<div class="navbar navbar-bottom">
 						<ul class="nav navbar-nav nav-right">
+								<li><a href="line_chart.php" id="linechart" style="color:black;"><span class="nav-right glyphicon glyphicon-fire"></span> <i>Line Chart</i></a></li>
 								<li><a href="cycles.html" style="color:black;"><span class="glyphicon glyphicon-user"></span> About</a></li>
 								<li><a href="log.php" id="log" style="color:black;"><span class="nav-right glyphicon glyphicon-th-list"></span> <i>Log</i></a></li>
 
