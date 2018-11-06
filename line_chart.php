@@ -9,7 +9,6 @@
 				<script type="text/javascript" src="./bootstrap/js/bootstrap.min.js"></script>
 				<script type="text/javascript" src="./js/moment-with-locales.min.js"></script>
 				<script src="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/src/js/bootstrap-datetimepicker.js"></script>
-				<!-- <script type="text/javascript" src="./js/events.js"></script> -->
 				<script type="text/javascript" src="./js/efficiency.js"></script>
 				<link href="./bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
 				<link href="./bootstrap/css/bootstrap-theme.css" rel="stylesheet" media="screen">
@@ -83,38 +82,6 @@
 												<li id="allMachines" class="active"><a href="#">All</a></li>
 										</ul>
 										<ul class="nav navbar-nav nav-right">
-												<!-- <script type="text/javascript">var machines = [];</script>
-												     <?php
-												     $config = parse_ini_file('/etc/cycles.conf');
-												     $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
-												     if ($mysqli->connect_errno) {
-														 echo "{$mysqli->connect_errno}: {$mysqli->connect_error}";
-												     }
-												     $result = $mysqli->query("SELECT DISTINCT MACHNUM FROM DAYREPORT ORDER BY MACHNUM");
-												     while ($c = $result->fetch_assoc()) {
-														 $machnum = $c['MACHNUM'];
-														 $machines[] = $machnum;
-														 echo "<li id='$machnum'><a href='#'>$machnum</a></li>" . "\n";
-												     }
-												     $result->free();
-												     $mysqli->close();
-												     ?>
-												     <script type='text/javascript'>
-												     $('#allMachines').on('click', function () {
-														 $('li').removeClass('active');
-														 $('#allMachines').addClass('active');
-														 $('#machineClicked').text('');
-												     });
-												     <?php
-												     foreach ($machines as $machine) {
-														 echo "$(\"#{$machine}\").on(\"click\", function () { $(\"li\").removeClass(\"active\");\n",
-														 "$(\"#{$machine}\").addClass(\"active\");\n",
-														 "$(\"#machineClicked\").text(\"{$machine}\");\n});\n";
-														 echo "machines.push('$machine');\n";
-												     }
-												     ?>
-												     </script> -->
-												<!-- <script type="text/javascript">checkMachines();</script> -->
 										</ul>
 								</div>
 						</nav>
