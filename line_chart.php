@@ -1,3 +1,38 @@
+<?php
+function get_percents($months) {
+    $tz = 'UTC';
+    date_default_timezone_set($tz);
+    $config = parse_ini_file('/etc/cycles.conf');
+    $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
+    $sql = "SELECT DT, MACHNUM, DAY_LENGTH, TOTAL_CYCLE_TIME/60/60 AS TOTAL_CYCLE_TIME FROM DAYREPORT WHERE DT >= NOW()-INTERVAL $months MONTH ORDER BY DT ASC";
+
+    $res = array();
+    $data = $mysqli->query($sql);
+    while($row = $data->fetch_object()) {
+        array_push($res, $row);
+    }
+    echo json_encode($res);
+		$data->free();
+		$mysqli->close();
+}
+
+function get_machines() {
+    $tz = 'UTC';
+    $config = parse_ini_file('/etc/cycles.conf');
+    $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
+		if ($mysqli->connect_errno) {
+				echo "{$mysqli->connect_errno}: {$mysqli->connect_error}";
+		}
+		$data = $mysqli->query("SELECT DISTINCT MACHNUM FROM DAYREPORT WHERE MACHNUM ORDER BY MACHNUM;");
+    $res = array();
+		while ($row = $data->fetch_assoc()) {
+        $res[] = $row['MACHNUM'];
+		}
+    echo json_encode($res);
+		$data->free();
+		$mysqli->close();
+}
+?>
 <!doctype html>
 <html lang="en">
 		<head>
@@ -75,11 +110,14 @@
 								<!-- Collection of nav links and other content for toggling -->
 								<div id="navbarCollapse" class="collapse navbar-collapse">
 										<ul class="nav navbar-nav">
-												<li id="LinkHome" class="inactive"><a href="/..">Home</a></li>
+												<li id="LinkHome" class="inactive"><a href="/machine">Back</a></li>
 										</ul>
 
 										<ul class="nav navbar-nav">
-												<li id="allMachines" class="active"><a href="#">All</a></li>
+												<li><a href="?months=1">1 month</a></li>
+												<li><a href="?months=3">3 months</a></li>
+												<li><a href="?months=6">6 months</a></li>
+												<li><a href="?months=12">12 months</a></li>
 										</ul>
 										<ul class="nav navbar-nav nav-right">
 										</ul>
@@ -88,49 +126,16 @@
 				</header>
 				<div class="col-xs-12 col-sm-12 col-md-12 col-md-12">
 						<div id="piepanel" class="panel panel-default">
-        <?php
-        $months = '3';
-        if (isset($_REQUEST['months']) && preg_match('/^\d+$/', $_REQUEST['months'])) {
-            if (intval($_REQUEST['months']) > 0) {
-                $months = $_REQUEST['months'];
-            }
-        }
-        $timeword = intval($months) > 1 ? "months" : "month";
-				echo("<div class='panel-heading'>Usage over time <span class='comment'>($months $timeword)</span></div>");
-        function get_percents($months) {
-            $tz = 'UTC';
-            date_default_timezone_set($tz);
-            $config = parse_ini_file('/etc/cycles.conf');
-            $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
-            $sql = "SELECT DT, MACHNUM, DAY_LENGTH, TOTAL_CYCLE_TIME/60/60 AS TOTAL_CYCLE_TIME FROM DAYREPORT WHERE DT >= NOW()-INTERVAL $months MONTH ORDER BY DT ASC";
-
-            $res = array();
-            $data = $mysqli->query($sql);
-            while($row = $data->fetch_object()) {
-                array_push($res, $row);
-            }
-            echo json_encode($res);
-						$data->free();
-						$mysqli->close();
-        }
-
-        function get_machines() {
-            $tz = 'UTC';
-            $config = parse_ini_file('/etc/cycles.conf');
-            $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
-						if ($mysqli->connect_errno) {
-								echo "{$mysqli->connect_errno}: {$mysqli->connect_error}";
-						}
-						$data = $mysqli->query("SELECT DISTINCT MACHNUM FROM DAYREPORT WHERE MACHNUM ORDER BY MACHNUM;");
-            $res = array();
-						while ($row = $data->fetch_assoc()) {
-                $res[] = $row['MACHNUM'];
-						}
-            echo json_encode($res);
-						$data->free();
-						$mysqli->close();
-        }
-        ?>
+                <?php
+                $months = '3';
+                if (isset($_REQUEST['months']) && preg_match('/^\d+$/', $_REQUEST['months'])) {
+                    if (intval($_REQUEST['months']) > 0) {
+                        $months = $_REQUEST['months'];
+                    }
+                }
+                $timeword = intval($months) > 1 ? "months" : "month";
+				        echo("<div class='panel-heading'>Usage over time <span class='comment'>($months $timeword)</span></div>");
+                ?>
 								<div class="panel-body"> <!-- style="height: 252px;"> -->
 										<div id="piecontainer" class="col-xs-24 xol-sm24 col-md-12">
                         <div id="chart_div" style="width: auto; height: 1000px"></div>
