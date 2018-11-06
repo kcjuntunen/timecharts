@@ -9,7 +9,7 @@
 				<script type="text/javascript" src="./bootstrap/js/bootstrap.min.js"></script>
 				<script type="text/javascript" src="./js/moment-with-locales.min.js"></script>
 				<script src="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/src/js/bootstrap-datetimepicker.js"></script>
-				<script type="text/javascript" src="./js/events.js"></script>
+				<!-- <script type="text/javascript" src="./js/events.js"></script> -->
 				<script type="text/javascript" src="./js/efficiency.js"></script>
 				<link href="./bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
 				<link href="./bootstrap/css/bootstrap-theme.css" rel="stylesheet" media="screen">
@@ -83,44 +83,43 @@
 												<li id="allMachines" class="active"><a href="#">All</a></li>
 										</ul>
 										<ul class="nav navbar-nav nav-right">
-												<script type="text/javascript">var machines = [];</script>
-												<?php
-												$config = parse_ini_file('/etc/cycles.conf');
-												$mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
-												if ($mysqli->connect_errno) {
-														echo "{$mysqli->connect_errno}: {$mysqli->connect_error}";
-												}
-												/* $result = $mysqli->query("SELECT DISTINCT MACHNUM FROM CUT_CYCLE_TIMES ORDER BY MACHNUM"); */
-												$result = $mysqli->query("SELECT DISTINCT MACHINE AS MACHNUM FROM CUT_CYCLE_EVENTS ORDER BY MACHINE");
-												while ($c = $result->fetch_assoc()) {
-														$machnum = $c['MACHNUM'];
-														$machines[] = $machnum;
-														echo "<li id='$machnum'><a href='#'>$machnum</a></li>" . "\n";
-												}
-												$result->free();
-												$mysqli->close();
-												?>
-												<script type='text/javascript'>
-												 $('#allMachines').on('click', function () {
+												<!-- <script type="text/javascript">var machines = [];</script>
+												     <?php
+												     $config = parse_ini_file('/etc/cycles.conf');
+												     $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
+												     if ($mysqli->connect_errno) {
+														 echo "{$mysqli->connect_errno}: {$mysqli->connect_error}";
+												     }
+												     $result = $mysqli->query("SELECT DISTINCT MACHNUM FROM DAYREPORT ORDER BY MACHNUM");
+												     while ($c = $result->fetch_assoc()) {
+														 $machnum = $c['MACHNUM'];
+														 $machines[] = $machnum;
+														 echo "<li id='$machnum'><a href='#'>$machnum</a></li>" . "\n";
+												     }
+												     $result->free();
+												     $mysqli->close();
+												     ?>
+												     <script type='text/javascript'>
+												     $('#allMachines').on('click', function () {
 														 $('li').removeClass('active');
 														 $('#allMachines').addClass('active');
 														 $('#machineClicked').text('');
-												 });
-												 <?php
-												 foreach ($machines as $machine) {
+												     });
+												     <?php
+												     foreach ($machines as $machine) {
 														 echo "$(\"#{$machine}\").on(\"click\", function () { $(\"li\").removeClass(\"active\");\n",
 														 "$(\"#{$machine}\").addClass(\"active\");\n",
 														 "$(\"#machineClicked\").text(\"{$machine}\");\n});\n";
 														 echo "machines.push('$machine');\n";
-												 }
-												 ?>
-												</script>
-												<script type="text/javascript">checkMachines();</script>
+												     }
+												     ?>
+												     </script> -->
+												<!-- <script type="text/javascript">checkMachines();</script> -->
 										</ul>
 								</div>
 						</nav>
 				</header>
-				<div class="col-xs-24 col-sm-24 col-md-12 col-md-12">
+				<div class="col-xs-12 col-sm-12 col-md-12 col-md-12">
 						<div id="piepanel" class="panel panel-default">
 								<div class="panel-heading">Usage over time</div>
 								<div class="panel-body"> <!-- style="height: 252px;"> -->
@@ -138,7 +137,7 @@
             date_default_timezone_set($tz);
             $config = parse_ini_file('/etc/cycles.conf');
             $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
-            $sql = "SELECT DT, MACHNUM, PERCENT_USAGE*100 AS PERCENT_USAGE FROM DAYREPORT WHERE DT > '2018-06-01' ORDER BY DT ASC";
+            $sql = "SELECT DT, MACHNUM, DAY_LENGTH, TOTAL_CYCLE_TIME/60/60 AS TOTAL_CYCLE_TIME FROM DAYREPORT WHERE DT >= NOW()-INTERVAL 3 MONTH ORDER BY DT ASC";
 
             $res = array();
             $data = $mysqli->query($sql);
@@ -146,6 +145,25 @@
                 array_push($res, $row);
             }
             echo json_encode($res);
+						$data->free();
+						$mysqli->close();
+        }
+
+        function get_machines() {
+            $tz = 'UTC';
+            $config = parse_ini_file('/etc/cycles.conf');
+            $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
+						if ($mysqli->connect_errno) {
+								echo "{$mysqli->connect_errno}: {$mysqli->connect_error}";
+						}
+						$data = $mysqli->query("SELECT DISTINCT MACHNUM FROM DAYREPORT WHERE MACHNUM ORDER BY MACHNUM;");
+            $res = array();
+						while ($row = $data->fetch_assoc()) {
+                $res[] = $row['MACHNUM'];
+						}
+            echo json_encode($res);
+						$data->free();
+						$mysqli->close();
         }
         ?>
 
@@ -155,63 +173,58 @@
 
          function drawLogScales() {
 						 $.backstretch("./img/stolen-bg.jpg");
-             var machines = ['008', '107', '1283', '1659', '1937', '2436'];
+             var machines = JSON.parse('<?php get_machines(); ?>');
              var data = new google.visualization.DataTable();
              data.addColumn('date', 'X');
+             data.addColumn('number', 'Day Length (hrs)');
              for (var i = 0; i < machines.length; i++) {
-                 console.log('Added ' + machines[i]);
                  data.addColumn('number', machines[i]);
              }
              var jsn = JSON.parse('<?php get_percents(); ?>');
              var dt = new Date(jsn[0]['DT']);
-             var row_array = [dt, 0, 0, 0, 0, 0, 0];
+             var row_array = Array.apply(0, Array(machines.length + 2)).map(function() {return 0;});
+             row_array[0] = dt;
+             var days = 0;
              for (var i = 0; i < jsn.length; i++) {
                  var new_date = false;
                  if ("" + new Date(jsn[i]['DT']) !== "" + dt) {
                      dt = new Date(jsn[i]['DT']);
                      new_date = true;
                      row_array[0] = dt;
+                     days++;
                  }
+                 row_array[1] = jsn[i]['DAY_LENGTH'] / 60 / 60;
                  if (!new_date) {
-                     switch(jsn[i]['MACHNUM']) {
-                         case '008':
-                             row_array[1] = Math.floor(jsn[i]['PERCENT_USAGE']);
-                             break;
-                         case '107':
-                             row_array[2] = Math.floor(jsn[i]['PERCENT_USAGE']);
-                             break;
-                         case '1283':
-                             row_array[3] = Math.floor(jsn[i]['PERCENT_USAGE']);
-                             break;
-                         case '1659':
-                             row_array[4] = Math.floor(jsn[i]['PERCENT_USAGE']);
-                             break;
-                         case '1937':
-                             row_array[5] = Math.floor(jsn[i]['PERCENT_USAGE']);
-                             break;
-                         case '2436':
-                             row_array[6] = Math.floor(jsn[i]['PERCENT_USAGE']);
-                             break;
-                         default:
-                             break;
+                     row_array[0] = dt;
+                     if(machines.indexOf(jsn[i]['MACHNUM']) > -1) {
+                         row_array[machines.indexOf(jsn[i]['MACHNUM']) + 2] = parseFloat(jsn[i]['TOTAL_CYCLE_TIME']);
                      }
                  } else {
                      new_date = false;
                      data.addRow(row_array);
+                     row_array = Array.apply(0, Array(machines.length + 2)).map(function() {return 0;});
                  }
              }
 
              var options = {
-                 /* curveType: 'function',  */
                  hAxis: {
                      title: 'Time',
                      logScale: false
                  },
                  vAxis: {
-                     title: 'Usage %',
+                     title: 'Usage (total hours of cycling)',
                      logScale: true
                  },
-                 colors: ['#f3f01e', '#108a00', '#e60000', '#a52714', '#097138', '#ff0000', '#000ff0']
+                 pointSize: 5,
+                 series: {
+                     0: { pointShape: 'circle' },
+                     1: { pointShape: 'triangle' },
+                     2: { pointShape: 'square' },
+                     3: { pointShape: 'diamond' },
+                     4: { pointShape: 'star' },
+                     5: { pointShape: 'polygon' }
+                 },
+                 colors: ['#f3f01e', '#108a00', '#e60000', '#a52714', '#097138', '#ff0000', '#000ff0', '#0ff000', '#000ff0', '#000cc0']
              };
 
              var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
