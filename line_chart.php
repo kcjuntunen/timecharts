@@ -88,23 +88,21 @@
 				</header>
 				<div class="col-xs-12 col-sm-12 col-md-12 col-md-12">
 						<div id="piepanel" class="panel panel-default">
-								<div class="panel-heading">Usage over time</div>
-								<div class="panel-body"> <!-- style="height: 252px;"> -->
-										<div id="piecontainer" class="col-xs-24 xol-sm24 col-md-12">
-                        <div id="chart_div" style="width: auto; height: 1000px"></div>
-										</div>
-
-								</div>
-						</div>
-				</div>
-
         <?php
-        function get_percents() {
+        $months = '3';
+        if (isset($_REQUEST['months']) && preg_match('/^\d+$/', $_REQUEST['months'])) {
+            if (intval($_REQUEST['months']) > 0) {
+                $months = $_REQUEST['months'];
+            }
+        }
+        $timeword = intval($months) > 1 ? "months" : "month";
+				echo("<div class='panel-heading'>Usage over time <span class='comment'>($months $timeword)</span></div>");
+        function get_percents($months) {
             $tz = 'UTC';
             date_default_timezone_set($tz);
             $config = parse_ini_file('/etc/cycles.conf');
             $mysqli = new mysqli($config['host'], $config['user'], $config['pass'], $config['db']);
-            $sql = "SELECT DT, MACHNUM, DAY_LENGTH, TOTAL_CYCLE_TIME/60/60 AS TOTAL_CYCLE_TIME FROM DAYREPORT WHERE DT >= NOW()-INTERVAL 3 MONTH ORDER BY DT ASC";
+            $sql = "SELECT DT, MACHNUM, DAY_LENGTH, TOTAL_CYCLE_TIME/60/60 AS TOTAL_CYCLE_TIME FROM DAYREPORT WHERE DT >= NOW()-INTERVAL $months MONTH ORDER BY DT ASC";
 
             $res = array();
             $data = $mysqli->query($sql);
@@ -133,6 +131,14 @@
 						$mysqli->close();
         }
         ?>
+								<div class="panel-body"> <!-- style="height: 252px;"> -->
+										<div id="piecontainer" class="col-xs-24 xol-sm24 col-md-12">
+                        <div id="chart_div" style="width: auto; height: 1000px"></div>
+										</div>
+
+								</div>
+						</div>
+				</div>
 
         <script type="text/javascript">
 
@@ -157,7 +163,7 @@
              for (var i = 0; i < machines.length; i++) {
                  data.addColumn('number', machines[i]);
              }
-             var jsn = JSON.parse('<?php get_percents(); ?>');
+             var jsn = JSON.parse('<?php get_percents($months); ?>');
              var dt = new Date(jsn[0]['DT']);
              var row_array = Array.apply(0, Array(machines.length + 2)).map(function() {return 0;});
              row_array[0] = dt;
