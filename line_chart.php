@@ -135,6 +135,16 @@
         ?>
 
         <script type="text/javascript">
+
+         function getRandomColor() {
+             var letters = '0123456789ABCDEF';
+             var color = '#';
+             for (var i = 0; i < 6; i++) {
+                 color += letters[Math.floor(Math.random() * 16)];
+             }
+             return color;
+         }
+
          google.charts.load('current', {packages: ['corechart', 'line']});
          google.charts.setOnLoadCallback(drawLogScales);
 
@@ -169,7 +179,7 @@
                  } else {
                      new_date = false;
                      data.addRow(row_array);
-                     row_array = Array.apply(0, Array(machines.length + 2)).map(function() {return 0;});
+                     row_array = Array.apply(0, Array(machines.length + 2)).map(function() {return 0;})
                  }
              }
 
@@ -191,12 +201,12 @@
                      4: { pointShape: 'star' },
                      5: { pointShape: 'polygon' }
                  },
-                 colors: ['#f3f01e', '#108a00', '#e60000', '#a52714', '#097138', '#ff0000', '#000ff0', '#0ff000', '#000ff0', '#000cc0']
+                 colors: Array.apply(0, Array(machines.length + 2)).map( function() { return getRandomColor(); })
              };
 
              var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
              chart.draw(data, options);
-         };
+         }
 
         </script>
     </body>
